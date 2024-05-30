@@ -1,0 +1,45 @@
+{
+  "name": "lbot-api-comandos",
+  "version": "1.0.0",
+  "description": "Conjunto de API's que são usados para os comandos do LBOT",
+  "main": "index.js",
+  "repository": "https://github.com/victorsouzaleal/lbot-api-comandos.git",
+  "author": "victorsouzaleal <victorsouzaleal@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@deepgram/sdk": "^3.2.0",
+    "@tobyg74/tiktok-api-dl": "^1.1.2",
+    "@victorsouzaleal/googlethis": "^1.8.1",
+    "@vitalets/google-translate-api": "^7.0.0",
+    "acrcloud": "^1.4.0",
+    "axios": "^1.6.8",
+    "correios-brasil": "^2.2.2",
+    "emoji-mixer": "^1.0.6",
+    "fb-downloader-scrapper": "^2.0.0",
+    "file-type": "^19.0.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "form-data": "^4.0.0",
+    "format-duration-time": "^1.5.4",
+    "fs-extra": "^9.0.1",
+    "genius-lyrics": "^4.2.9",
+    "hercai": "^12.2.0",
+    "instagram-url-direct": "^1.0.16",
+    "jimp": "^0.22.12",
+    "moment-timezone": "^0.5.31",
+    "node-gtts": "^2.0.2",
+    "node-upload-images": "^1.0.1",
+    "node-webpmux": "^3.2.0",
+    "pretty-num": "^0.5.0",
+    "twitter-downloader": "^1.1.7",
+    "youtube-sr": "^4.2.0",
+    "ytdl-core": "4.11.5"
+  },
+  "optionalDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0"
+  },
+  "private": false
+}
