@@ -20,7 +20,7 @@ export const obterRespostaIA = async(textoUsuario, usuario)=>{
                 reject(resposta)
             })
         } catch(err) {
-            console.log(`API respostaHercaiTexto - ${err.message}`)
+            console.log(`API obterRespostaIA - ${err.message}`)
             reject({sucesso: false, erro:'Houve um erro no servidor, tente novamente mais tarde.'})
         }
     })
@@ -52,13 +52,13 @@ export const obterImagemIA = async(textoUsuario)=>{
                 reject(resposta)
             })
         } catch(err) {
-            console.log(`API respostaHercaiImagem - ${err.message}`)
+            console.log(`API obterImagemIA - ${err.message}`)
             reject({sucesso: false, erro:'Houve um erro no servidor, tente novamente mais tarde.'})
         }
     })
 }
 
-export const simiResponde = async(textoUsuario)=>{
+export const obterRespostaSimi = async(textoUsuario)=>{
     return new Promise(async(resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
@@ -82,7 +82,7 @@ export const simiResponde = async(textoUsuario)=>{
                 }
             })
         } catch(err){
-            console.log(`API simiResponde- ${err.message}`)
+            console.log(`API obterRespostaSimi - ${err.message}`)
             reject({sucesso: false, erro: "Houve um erro no servidor do SimSimi."})
         }
     })
