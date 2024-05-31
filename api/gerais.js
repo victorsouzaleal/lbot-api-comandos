@@ -8,13 +8,12 @@ import qs from 'querystring'
 import { timestampParaData } from '../lib/util.js';
 
 
-export const top20TendenciasDia = async(tipoDeDados)=>{
+export const top20TendenciasDia = async(tipo = 'filmes')=>{
     return new Promise(async(resolve,reject)=>{
         try{
             let resposta = {sucesso: false}
-            let num = 0;
-            let tipo = ''
-            switch(tipoDeDados){
+            let num = 0
+            switch(tipo){
                 case "filmes":
                     tipo = "movie"
                     break
@@ -158,7 +157,7 @@ export const obterRastreioCorreios = async (codigoRastreio) =>{
     })
 }
 
-export const obterPesquisaWeb = async (pesquisaTexto) =>{
+export const obterPesquisaWeb = async (texto) =>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: true, resultados:[]}
@@ -170,7 +169,7 @@ export const obterPesquisaWeb = async (pesquisaTexto) =>{
                     hl: 'pt-br' 
                 }
             }
-            await google.search(pesquisaTexto, options).then((resultados)=>{
+            await google.search(texto, options).then((resultados)=>{
                 if(resultados.results.length == 0){
                     resposta = {sucesso: false, erro:" Não foram encontrados resultados para esta pesquisa."}
                     reject(resposta)
@@ -255,12 +254,12 @@ export const obterClima = async (local) =>{
     })
 }
 
-export const obterLetraMusica = async (musica) =>{
+export const obterLetraMusica = async (texto) =>{
     return new Promise(async (resolve,reject)=>{
         try{
             let resposta = {sucesso: false}
             const Client = new Genius.Client()
-            await Client.songs.search(musica).then(async (pesquisaMusica)=>{
+            await Client.songs.search(texto).then(async (pesquisaMusica)=>{
                 if(pesquisaMusica.length == 0) {
                     resposta = {sucesso: false, erro: "A letra da música não foi encontrada"}
                     reject(resposta)

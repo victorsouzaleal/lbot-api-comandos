@@ -1,14 +1,14 @@
 import {obterCaminhoTemporario} from '../lib/util.js'
-import {toSticker, updateExif} from '../lib/sticker.js'
+import {criacaoSticker, adicionarExif} from '../lib/sticker.js'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs-extra'
 
 
-export const criarSticker = (bufferMidia, opcoes)=>{
+export const criarSticker = (bufferMidia, {pack = 'LBOT', autor = 'LBOT Stickers', fps = 9, tipo = 'padrao'})=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
-            await toSticker(bufferMidia, {pack: opcoes?.pack, author: opcoes?.autor, fps: opcoes?.fps, type: opcoes?.tipo}).then((bufferSticker)=>{
+            await criacaoSticker(bufferMidia, {pack, autor, fps, tipo}).then((bufferSticker)=>{
                 resposta = {sucesso: true, resultado: bufferSticker}
                 resolve(resposta)
             }).catch(() =>{
@@ -26,7 +26,7 @@ export const renomearSticker = (bufferSticker, pack, autor)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
-            await updateExif(bufferSticker, pack, autor).then((bufferSticker)=>{
+            await adicionarExif(bufferSticker, pack, autor).then((bufferSticker)=>{
                 resposta = {sucesso: true, resultado: bufferSticker}
                 resolve(resposta)
             }).catch(() =>{

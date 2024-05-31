@@ -59,7 +59,7 @@ export const obterTranscricaoAudio = async (bufferAudio, {deepgram_secret_key})=
     })
 }
 
-export const obterAudioModificado = async (bufferAudio, tipoEdicao) =>{
+export const obterAudioModificado = async (bufferAudio, tipo) =>{
     return new Promise((resolve,reject)=>{
         try{
             let resposta = {sucesso : false}
@@ -67,7 +67,7 @@ export const obterAudioModificado = async (bufferAudio, tipoEdicao) =>{
             let saidaAudio = obterCaminhoTemporario('mp3')
             let ffmpegOpcoes = []
             fs.writeFileSync(caminhoAudio, bufferAudio)
-            switch(tipoEdicao){
+            switch(tipo){
                 case "estourar":
                     ffmpegOpcoes = ["-y", "-filter_complex", "acrusher=level_in=3:level_out=5:bits=10:mode=log:aa=1"] 
                     break
@@ -114,11 +114,15 @@ export const obterAudioModificado = async (bufferAudio, tipoEdicao) =>{
 export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_access_key, acr_access_secret}) =>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: false}, bufferAudio, tipoArquivo = fileTypeFromBuffer(bufferMidia)
+            let resposta = {sucesso: false}
+            let bufferAudio
+            let {mime: tipoArquivo} = fileTypeFromBuffer(bufferMidia)
+
             if(!acr_host || !acr_access_key || !acr_access_secret){
                 resposta = {sucesso: false, erro: 'As chaves do ACRCloud não foram inseridas corretamente'}
                 reject(resposta)
             }
+            
             const acr = new acrcloud({
                 host: acr_host?.trim(),
                 access_key: acr_access_key?.trim(),

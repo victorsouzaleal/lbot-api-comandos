@@ -3,12 +3,12 @@ import { Hercai } from "hercai"
 import qs from 'node:querystring'
 import {obterTraducao} from './gerais.js'
 
-export const obterRespostaIA = async(textoUsuario, usuario)=>{
+export const obterRespostaIA = async(texto, id_usuario)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
             const herc = new Hercai()
-            await herc.betaQuestion({content: textoUsuario, user: usuario}).then((respostaHercai)=>{
+            await herc.betaQuestion({content: texto, user: id_usuario}).then((respostaHercai)=>{
                 resposta = {sucesso: true, resultado: respostaHercai.reply}
                 resolve(resposta)
             }).catch((err)=>{
@@ -26,12 +26,12 @@ export const obterRespostaIA = async(textoUsuario, usuario)=>{
     })
 }
 
-export const obterImagemIA = async(textoUsuario)=>{
+export const obterImagemIA = async(texto)=>{
     return new Promise(async (resolve,reject)=>{
         try{
             const herc = new Hercai()
             let resposta = {sucesso: false}
-            let {resultado} = await obterTraducao(textoUsuario, 'en')
+            let {resultado} = await obterTraducao(texto, 'en')
             await herc.betaDrawImage({prompt: resultado, width: 256, height:256}).then((respostaHercai)=>{
                 if(respostaHercai.status == 404) {
                     resposta = {sucesso: false, erro: 'O texto que você colocou é inválido ou não pode ser criado.'}
@@ -58,7 +58,7 @@ export const obterImagemIA = async(textoUsuario)=>{
     })
 }
 
-export const obterRespostaSimi = async(textoUsuario)=>{
+export const obterRespostaSimi = async(texto)=>{
     return new Promise(async(resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
@@ -66,7 +66,7 @@ export const obterRespostaSimi = async(textoUsuario)=>{
                 url: "https://api.simsimi.vn/v2/simtalk",
                 method: "post",
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'},
-                data : qs.stringify({text: textoUsuario, lc: 'pt'})
+                data : qs.stringify({text: texto, lc: 'pt'})
             }
 
             await axios(config).then((simiresposta)=>{

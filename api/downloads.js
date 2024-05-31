@@ -133,11 +133,11 @@ export const obterMidiaInstagram = async(url, selecao = null)=>{
 
 }
 
-export const obterInfoVideoYT = async(query)=>{ 
+export const obterInfoVideoYT = async(texto)=>{ 
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
-            await Youtube.default.searchOne(query).then(async pesquisaVideo =>{
+            await Youtube.default.searchOne(texto).then(async pesquisaVideo =>{
                 await ytdl.getBasicInfo(pesquisaVideo.id).then(infovideo=>{
                     resposta = {sucesso: true, resultado: infovideo.player_response.videoDetails}
                     resposta.resultado.durationFormatted = pesquisaVideo.durationFormatted
@@ -158,11 +158,11 @@ export const obterInfoVideoYT = async(query)=>{
     })
 }
 
-export const obterYTMP3 = async(videoId)=>{
+export const obterYTMP3 = async(id_video)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {sucesso: false}
-            let {resultado} = await obterYTMP4(videoId)
+            let {resultado} = await obterYTMP4(id_video)
             let bufferAudio = (await converterMp4ParaMp3(resultado)).resultado
             resposta = {sucesso: true, resultado: bufferAudio}
             resolve(resposta)
@@ -173,12 +173,12 @@ export const obterYTMP3 = async(videoId)=>{
     })
 }
 
-export const obterYTMP4 = async(videoId) =>{
+export const obterYTMP4 = async(id_video) =>{
     return new Promise ((resolve, reject)=>{
         try{
             let resposta = {sucesso: true}
             let saidaVideo = obterCaminhoTemporario('mp4')
-            let videoStream = ytdl(videoId, {quality: "highest", filter:"videoandaudio"})
+            let videoStream = ytdl(id_video, {quality: "highest", filter:"videoandaudio"})
             videoStream.pipe(fs.createWriteStream(saidaVideo))
             videoStream.on("end", ()=>{
                 let bufferVideo = fs.readFileSync(saidaVideo)

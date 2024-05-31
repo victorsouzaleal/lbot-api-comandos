@@ -32,29 +32,30 @@ export const converterMp4ParaMp3 = (bufferVideo) => {
     })
 }
 
-export const obterThumbnailVideo = async(arquivo, tipoArquivo="file") =>{
+export const obterThumbnailVideo = async(midia, tipo = "file") =>{
     return new Promise(async (resolve,reject)=>{
         try{
             let resposta = {sucesso: false}
-            let saidaThumbImagem = obterCaminhoTemporario('jpg'), inputCaminho = null
-            if(tipoArquivo == "file"){
-                inputCaminho = arquivo
-            } else if(tipoArquivo == "buffer"){
-                inputCaminho = obterCaminhoTemporario('mp4')
-                fs.writeFileSync(inputCaminho, arquivo)
-            } else if(tipoArquivo == "url"){
-                let urlResponse = await axios.get(arquivo,  { responseType: 'arraybuffer' })
+            let caminhoEntrada
+            let saidaThumbImagem = obterCaminhoTemporario('jpg')
+            if(tipo == "file"){
+                caminhoEntrada = midia
+            } else if(tipo == "buffer"){
+                caminhoEntrada = obterCaminhoTemporario('mp4')
+                fs.writeFileSync(caminhoEntrada, midia)
+            } else if(tipo == "url"){
+                let urlResponse = await axios.get(midia,  { responseType: 'arraybuffer' })
                 let bufferUrl = Buffer.from(urlResponse.data, "utf-8")
-                inputCaminho = obterCaminhoTemporario('mp4')
-                fs.writeFileSync(inputCaminho, bufferUrl)
+                caminhoEntrada = obterCaminhoTemporario('mp4')
+                fs.writeFileSync(caminhoEntrada, bufferUrl)
             }
-            ffmpeg(inputCaminho)
+            ffmpeg(caminhoEntrada)
             .addOption("-y")
             .inputOptions(["-ss 00:00:00"])
             .outputOptions(["-vf scale=32:-1", "-vframes 1", "-f image2"])
             .save(saidaThumbImagem)
             .on('end', ()=>{
-                if(tipoArquivo != 'file') fs.unlinkSync(inputCaminho)
+                if(tipo != 'file') fs.unlinkSync(caminhoEntrada)
                 let thumbBase64 = fs.readFileSync(saidaThumbImagem).toString('base64')
                 fs.unlinkSync(saidaThumbImagem)
                 resposta = {sucesso: true, resultado : thumbBase64}

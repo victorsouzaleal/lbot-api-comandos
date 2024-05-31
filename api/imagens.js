@@ -6,7 +6,7 @@ import FormData from 'form-data'
 import getEmojiMixUrl, {checkSupported} from 'emoji-mixer'
 import qs from 'node:querystring'
 import {ImageUploadService} from 'node-upload-images'
-import fs from 'fs-extra'
+
 
 export const imagemUpload = async (bufferImagem) =>{
     return new Promise(async (resolve, reject)=>{
@@ -79,13 +79,13 @@ export const misturarEmojis = async (emoji1, emoji2)=>{
     })
 }
 
-export const removerFundo = async(imagemBuffer)=>{
+export const removerFundo = async(bufferImagem)=>{
     return new Promise(async (resolve,reject)=>{
         try{
             let resposta = {sucesso: false}
             let nomeArquivo = obterNomeAleatorio("png")
             let data = new FormData();
-            data.append('files', imagemBuffer, {filename: nomeArquivo})
+            data.append('files', bufferImagem, {filename: nomeArquivo})
     
             let config = {
                 method: 'post',
@@ -213,11 +213,11 @@ export const obterAnimeInfo = async (bufferImagem)=>{
     })
 }
 
-export const obterImagens = async (pesquisaTexto)=>{ 
+export const obterImagens = async (texto)=>{ 
     return new Promise(async(resolve,reject)=>{
         try {
             let resposta = {sucesso: false}
-            await google.image(pesquisaTexto, { safe: false, additional_params:{hl: 'pt'}}).then((imagens)=>{
+            await google.image(texto, { safe: false, additional_params:{hl: 'pt'}}).then((imagens)=>{
                 if(imagens.length == 0) {
                     resposta = {sucesso: false, erro: "Não foi encontrado resultado para esta pesquisa."}
                     reject(resposta)
