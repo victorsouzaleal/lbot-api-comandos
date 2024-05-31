@@ -116,7 +116,7 @@ export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_acce
         try{
             let resposta = {sucesso: false}
             let bufferAudio
-            let {mime: tipoArquivo} = fileTypeFromBuffer(bufferMidia)
+            let {mime: tipoArquivo} = await fileTypeFromBuffer(bufferMidia)
 
             if(!acr_host || !acr_access_key || !acr_access_secret){
                 resposta = {sucesso: false, erro: 'As chaves do ACRCloud não foram inseridas corretamente'}
@@ -131,7 +131,7 @@ export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_acce
 
             if(tipoArquivo.startsWith('video')){
                 bufferAudio = (await converterMp4ParaMp3(bufferMidia)).resultado
-            } else if (tipoArquivo.startsWith('image')){
+            } else if (tipoArquivo.startsWith('audio')){
                 bufferAudio = bufferMidia
             } else {
                 resposta = {sucesso: false, erro: 'Esse tipo de mensagem não é suportado.'}
