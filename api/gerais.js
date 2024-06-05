@@ -1,12 +1,50 @@
 import axios from 'axios'
 import {prettyNum} from 'pretty-num'
 import { rastrearEncomendas } from 'correios-brasil'
-import translate from '@vitalets/google-translate-api' ; 
+import translate from '@vitalets/google-translate-api'
 import google from '@victorsouzaleal/googlethis'
 import Genius from 'genius-lyrics'
 import qs from 'querystring'
-import { timestampParaData } from '../lib/util.js';
+import { timestampParaData } from '../lib/util.js'
+import {obterDadosBrasileiraoA, obterDadosBrasileiraoB} from '@victorsouzaleal/brasileirao'
 
+
+export const obterDadosBrasileirao = async(serie = "A")=>{
+    return new Promise(async(resolve,reject)=>{
+        try{
+            let resposta = {sucesso: false}
+            if(serie === "A"){
+                const dadosBrasileiraoA = await obterDadosBrasileiraoA()
+                resposta = {
+                    sucesso: true,
+                    resultado: {
+                        tabela: dadosBrasileiraoA.tabela,
+                        rodada_atual: dadosBrasileiraoA.rodadas.filter(rodada => rodada.rodada_atual == true),
+                        rodadas: dadosBrasileiraoA.rodadas  
+                    }
+                }
+                resolve(resposta)
+            } else if (serie === "B"){
+                const dadosBrasileiraoB = await obterDadosBrasileiraoB()
+                resposta = {
+                    sucesso: true,
+                    resultado: {
+                        tabela: dadosBrasileiraoB.tabela,
+                        rodada_atual: dadosBrasileiraoB.rodadas.filter(rodada => rodada.rodada_atual == true),
+                        rodadas: dadosBrasileiraoB.rodadas  
+                    }
+                }
+                resolve(resposta)
+            } else {
+                resposta = {sucesso: false, erro: "A série inserida não é suportada, apenas A e B."}
+                reject(resposta)
+            }
+        } catch(err){
+            console.log(`API obterDadosBrasileirao - ${err.message}`)
+            reject({sucesso: false, erro: `Houve um erro ao obter os dados da tabela do Brasileirão no servidor.`})
+        }
+    })
+}
 
 export const top20TendenciasDia = async(tipo = 'filmes')=>{
     return new Promise(async(resolve,reject)=>{
