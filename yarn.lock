@@ -2218,6 +2218,13 @@ user-agents@^1.1.225:
   dependencies:
     lodash.clonedeep "^4.5.0"
 
+user-agents@^1.1.231:
+  version "1.1.231"
+  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.1.231.tgz#6dc9840ab8e2660a98209e70e0f6599b866e498f"
+  integrity sha512-/jEW2+iLUpGM1q0W+jdHYNBktebpHDskMytxsde7eWHJiegF8y8AlMlkxQxUEBu569fp1Ngp1pMWTIEnHk59cQ==
+  dependencies:
+    lodash.clonedeep "^4.5.0"
+
 utf-8-validate@^5.0.2:
   version "5.0.10"
   resolved "https://registry.yarnpkg.com/utf-8-validate/-/utf-8-validate-5.0.10.tgz#d7d10ea39318171ca982718b6b96a8d2442571a2"

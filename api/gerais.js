@@ -7,7 +7,31 @@ import Genius from 'genius-lyrics'
 import qs from 'querystring'
 import { timestampParaData } from '../lib/util.js'
 import {obterDadosBrasileiraoA, obterDadosBrasileiraoB} from '@victorsouzaleal/brasileirao'
+import {JSDOM} from 'jsdom'
+import UserAgent from 'user-agents'
 
+
+export const obterAnimesLancamento = async()=>{
+    return new Promise(async(resolve, reject) =>{
+        try{
+            const URL_BASE = 'https://www.hinatasoul.com'
+            const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
+            const {window:{document}} = new JSDOM(data)
+            const $animes = document.querySelectorAll('div.mainContainer.mwidth > div:nth-child(6) > div.ultimosEpisodiosHomeItem')
+            let animes = []
+            $animes.forEach($anime =>{
+                animes.push({
+                    nome: $anime.querySelector('a').getAttribute('title').trim(),
+                    episodio: $anime.querySelector('div.ultimosEpisodiosHomeItemInfosNum').innerHTML.replace(/(\r\n\t|\n|\r|\t)/gm, ""),
+                    link: $anime.querySelector('a').href
+                })
+            })
+            resolve({resultado: animes})
+        } catch(err){
+            reject({erro: 'Houve um erro no servidor para obter os lançamentos de animes.'})
+        }
+    })
+}
 
 export const obterDadosBrasileirao = async(serie = "A")=>{
     return new Promise(async(resolve,reject)=>{
