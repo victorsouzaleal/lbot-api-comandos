@@ -33,6 +33,28 @@ export const obterAnimesLancamento = async()=>{
     })
 }
 
+export const obterMangasLancamento = async()=>{
+    return new Promise(async(resolve, reject) =>{
+        try{
+            const URL_BASE = 'https://mugiwarasoficial.com/'
+            const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
+            const {window:{document}} = new JSDOM(data)
+            const $mangas = document.querySelectorAll('div.page-item-detail.manga')
+            let mangas = []
+            $mangas.forEach($manga =>{
+                mangas.push({
+                    nome: $manga.querySelector('div.item-summary > div > h3 > a').innerHTML.trim(),
+                    capitulo: $manga.querySelector('div.item-summary > div.list-chapter > div > span > a').innerHTML.trim(),
+                    link: $manga.querySelector('div.item-summary > div.list-chapter > div > span > a').href
+                })
+            })
+            resolve({resultado: mangas})
+        } catch(err){
+            reject({erro: 'Houve um erro no servidor para obter os lançamentos de mangás.'})
+        }
+    })
+}
+
 export const obterDadosBrasileirao = async(serie = "A")=>{
     return new Promise(async(resolve,reject)=>{
         try{
