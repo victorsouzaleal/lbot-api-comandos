@@ -14,6 +14,7 @@ import UserAgent from 'user-agents'
 export const obterAnimesLancamento = async()=>{
     return new Promise(async(resolve, reject) =>{
         try{
+            let resposta = {}
             const URL_BASE = 'https://www.hinatasoul.com'
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
@@ -26,8 +27,10 @@ export const obterAnimesLancamento = async()=>{
                     link: $anime.querySelector('a').href
                 })
             })
-            resolve({resultado: animes})
+            resposta.resultado = animes
+            resolve(resposta)
         } catch(err){
+            console.log(`API obterAnimesLancamento - ${err.message}`)
             reject({erro: 'Houve um erro no servidor para obter os lançamentos de animes.'})
         }
     })
@@ -36,6 +39,7 @@ export const obterAnimesLancamento = async()=>{
 export const obterMangasLancamento = async()=>{
     return new Promise(async(resolve, reject) =>{
         try{
+            let resposta = {}
             const URL_BASE = 'https://mugiwarasoficial.com/'
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
@@ -48,8 +52,10 @@ export const obterMangasLancamento = async()=>{
                     link: $manga.querySelector('div.item-summary > div.list-chapter > div > span > a').href
                 })
             })
-            resolve({resultado: mangas})
+            resposta.resultado = mangas
+            resolve(resposta)
         } catch(err){
+            console.log(`API obterMangasLancamento - ${err.message}`)
             reject({erro: 'Houve um erro no servidor para obter os lançamentos de mangás.'})
         }
     })
@@ -58,36 +64,24 @@ export const obterMangasLancamento = async()=>{
 export const obterDadosBrasileirao = async(serie = "A")=>{
     return new Promise(async(resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
-            if(serie === "A"){
-                const dadosBrasileiraoA = await obterDadosBrasileiraoA()
-                resposta = {
-                    sucesso: true,
-                    resultado: {
-                        tabela: dadosBrasileiraoA.tabela,
-                        rodada_atual: dadosBrasileiraoA.rodadas.filter(rodada => rodada.rodada_atual == true),
-                        rodadas: dadosBrasileiraoA.rodadas  
-                    }
-                }
-                resolve(resposta)
-            } else if (serie === "B"){
-                const dadosBrasileiraoB = await obterDadosBrasileiraoB()
-                resposta = {
-                    sucesso: true,
-                    resultado: {
-                        tabela: dadosBrasileiraoB.tabela,
-                        rodada_atual: dadosBrasileiraoB.rodadas.filter(rodada => rodada.rodada_atual == true),
-                        rodadas: dadosBrasileiraoB.rodadas  
-                    }
-                }
-                resolve(resposta)
-            } else {
-                resposta = {sucesso: false, erro: "A série inserida não é suportada, apenas A e B."}
+            let resposta = {}
+            let dadosBrasileirao
+            if(serie === 'A') dadosBrasileirao = await obterDadosBrasileiraoA()
+            if(serie === 'B') dadosBrasileirao = await obterDadosBrasileiraoB()
+            else {
+                resposta.erro = "A série inserida não é suportada, apenas A e B."
                 reject(resposta)
             }
+
+            resposta.resultado = {
+                tabela: dadosBrasileirao.tabela,
+                rodada_atual: dadosBrasileirao.rodadas.filter(rodada => rodada.rodada_atual == true),
+                rodadas: dadosBrasileirao.rodadas  
+            }
+            resolve(resposta)
         } catch(err){
             console.log(`API obterDadosBrasileirao - ${err.message}`)
-            reject({sucesso: false, erro: `Houve um erro ao obter os dados da tabela do Brasileirão no servidor.`})
+            reject({erro: `Houve um erro ao obter os dados da tabela do Brasileirão no servidor.`})
         }
     })
 }
@@ -95,7 +89,7 @@ export const obterDadosBrasileirao = async(serie = "A")=>{
 export const top20TendenciasDia = async(tipo = 'filmes')=>{
     return new Promise(async(resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             let num = 0
             switch(tipo){
                 case "filmes":
@@ -111,15 +105,15 @@ export const top20TendenciasDia = async(tipo = 'filmes')=>{
                     num++;
                     return `${num}°: *${item.title || item.name}.*\n\`Sinopse:\` ${item.overview} \n`
                     }).join('\n');
-                resposta = {sucesso: true, resultado: dados}
+                resposta.resultado = dados
                 resolve(resposta)
             }).catch(() =>{
-                resposta = {sucesso: false, erro: `Houve um erro no servidor ao listar ${tipo === 'movie' ? "os filmes":tipo === 'tv' && "as séries"}.`}
+                resposta.erro = `Houve um erro no servidor ao listar ${tipo === 'movie' ? "os filmes":tipo === 'tv' && "as séries"}.`
                 reject(resposta)
             })
         } catch(err){
             console.log(`API top20TendenciasDia- ${err.message}`)
-            reject({sucesso: false, erro: `Houve um erro no servidor ao listar ${tipo === 'movie' ? "os filmes":tipo === 'tv' && "as séries"}.`})
+            reject({erro: `Houve um erro no servidor ao listar ${tipo === 'movie' ? "os filmes":tipo === 'tv' && "as séries"}.`})
         }
     })
 }
@@ -127,7 +121,7 @@ export const top20TendenciasDia = async(tipo = 'filmes')=>{
 export const obterCalculo = async (expressao) =>{
     return new Promise (async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: true}
+            let resposta = {}
             expressao = expressao.replace(/[Xx\xD7]/g, "*")
             expressao = expressao.replace(/\xF7/g, "/")
             expressao = expressao.replace(/,/g,".")
@@ -135,20 +129,20 @@ export const obterCalculo = async (expressao) =>{
             await axios.post(`https://api.mathjs.org/v4/`,{expr: expressao}).then((res)=>{
                 let resultado = res.data.result
                 if(resultado == "NaN" || resultado == "Infinity"){
-                    resposta = {sucesso: false, erro: 'Foi feita uma divisão por 0 ou algum outro cálculo inválido.'}
+                    resposta.erro = 'Foi feita uma divisão por 0 ou algum outro cálculo inválido.'
                     reject(resposta)
                 }
                 resultado = resultado.split(" ")
                 resultado[0] = (resultado[0].includes("e")) ? prettyNum(resultado[0]) : resultado[0]
-                resposta = {sucesso: true, resultado: resultado.join(" ")}
+                resposta.resultado = resultado.join(" ")
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso: false, erro: 'Houve um erro no servidor de cálculo.'}
+                resposta.erro = 'Houve um erro no servidor de cálculo.'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterCalculo- ${err.message}`)
-            reject({sucesso: false, erro: 'Houve um erro no servidor de cálculo.'})
+            reject({erro: 'Houve um erro no servidor de cálculo.'})
         }
     })
 }
@@ -156,9 +150,9 @@ export const obterCalculo = async (expressao) =>{
 export const obterNoticias = async ()=>{
     return new Promise(async(resolve,reject)=>{
         try {
-            let resposta = {sucesso:false}
+            let resposta = {}
             await google.getTopNews('pt').then((listaNoticias)=>{
-                resposta = {sucesso:true, resultado : []}
+                resposta.resultado = []
                 for(let noticia of listaNoticias.headline_stories){
                     resposta.resultado.push({
                         titulo : noticia.title,
@@ -169,12 +163,12 @@ export const obterNoticias = async ()=>{
                 }
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso:false, erro: "Houve um erro no servidor de notícias."}
+                resposta.erro = "Houve um erro no servidor de notícias."
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterNoticias - ${err.message}`)
-            reject({sucesso:false, erro: "Houve um erro no servidor de notícias."})
+            reject({erro: "Houve um erro no servidor de notícias."})
         }
     })
 }
@@ -182,17 +176,17 @@ export const obterNoticias = async ()=>{
 export const obterTraducao = async (texto, idioma)=>{
     return new Promise(async (resolve, reject)=>{
         try {
-            let resposta = {sucesso: false}
+            let resposta = {}
             await translate(texto , {to: idioma}).then((res)=>{
-                resposta = {sucesso: true, resultado: res.text}
+                resposta.resultado = res.text
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso: false, erro: "Houve um erro em processar a tradução."}
+                resposta.erro = "Houve um erro em processar a tradução."
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterTraducao - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro em processar a tradução."})
+            reject({erro: "Houve um erro em processar a tradução."})
         }
     })
 }
@@ -201,22 +195,22 @@ export const obterTraducao = async (texto, idioma)=>{
 export const encurtarLink = async(link)=>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             await axios.post("https://shorter.me/page/shorten", qs.stringify({url : link, alias: '', password: ''})).then(({data})=>{
                 if(!data.data){
-                    resposta = {sucesso: false, erro: `O link que você inseriu é inválido.`}
+                    resposta.erro = `O link que você inseriu é inválido.`
                     reject(resposta)
                 } else {
-                    resposta = {sucesso: true, resultado: data.data}
+                    resposta.resultado = data.data
                     resolve(resposta)
                 }
             }).catch(err =>{
-                resposta = {sucesso: false, erro: `Houve um erro no servidor do encurtador de link.`}
+                resposta.erro = `Houve um erro no servidor do encurtador de link.`
                 reject(resposta)
             })
         } catch(err){
             console.log(`API encurtarLink - ${err.message}`)
-            reject({sucesso: false, erro: `Houve um erro no servidor do encurtador de link`})
+            reject({erro: `Houve um erro no servidor do encurtador de link`})
         }
     })
 }
@@ -224,19 +218,19 @@ export const encurtarLink = async(link)=>{
 export const obterRastreioCorreios = async (codigoRastreio) =>{
     return new Promise(async (resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             await rastrearEncomendas([codigoRastreio]).then((res)=>{
                 if(res[0].length < 1){
-                    resposta = {sucesso: false, erro: 'Parece que este objeto ainda não foi postado ou não existe'}
+                    resposta.erro = 'Parece que este objeto ainda não foi postado ou não existe'
                     reject(resposta)
                 } else {
-                    resposta = {sucesso: true, resultado: res[0]}
+                    resposta.resultado = res[0]
                     resolve(resposta)
                 }
             })
         } catch(err){
             console.log(`API obterRastreioCorreios - ${err.message}`)
-            reject({sucesso: true, erro: "Houve um erro no servidor dos Correios."})
+            reject({erro: "Houve um erro no servidor dos Correios."})
         }  
     })
 }
@@ -244,7 +238,7 @@ export const obterRastreioCorreios = async (codigoRastreio) =>{
 export const obterPesquisaWeb = async (texto) =>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: true, resultados:[]}
+            let resposta = {}
             const options = {
                 page: 0, 
                 safe: false, // Safe Search
@@ -255,10 +249,10 @@ export const obterPesquisaWeb = async (texto) =>{
             }
             await google.search(texto, options).then((resultados)=>{
                 if(resultados.results.length == 0){
-                    resposta = {sucesso: false, erro:" Não foram encontrados resultados para esta pesquisa."}
+                    resposta.erro = "Não foram encontrados resultados para esta pesquisa."
                     reject(resposta)
                 } else {
-                    resposta.sucesso = true
+                    resposta.resultados = []
                     for(let resultado of resultados.results){
                         resposta.resultados.push({
                             titulo: resultado.title,
@@ -269,12 +263,12 @@ export const obterPesquisaWeb = async (texto) =>{
                     resolve(resposta)
                 }
             }).catch(()=>{
-                resposta = {sucesso: false, erro: "Houve um erro no servidor de pesquisa."}
+                resposta.erro = "Houve um erro no servidor de pesquisa."
                 reject(resposta)
             })
         } catch(err) {
             console.log(`API obterPesquisaWeb - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro no servidor de pesquisa."})
+            reject({erro: "Houve um erro no servidor de pesquisa."})
         }
     })
 }
@@ -282,7 +276,7 @@ export const obterPesquisaWeb = async (texto) =>{
 export const obterClima = async (local) =>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             const climaAPIURL = `http://api.weatherapi.com/v1/forecast.json?key=516f58a20b6c4ad3986123104242805&q=${encodeURIComponent(local)}&days=3&aqi=no&alerts=no`
             await axios.get(climaAPIURL).then(async ({data})=>{
                 const {data: condicoesClima} = await axios.get("https://www.weatherapi.com/docs/conditions.json", {responseType: 'json'})
@@ -325,15 +319,15 @@ export const obterClima = async (local) =>{
                     clima.previsao.push(dadosPrevisao)
                 })
 
-                resposta = {sucesso: true, resultado: clima}
+                resposta.resultado = clima
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso: false, erro: "Houve um erro no servidor de pesquisa de clima."}
+                resposta.erro = "Houve um erro no servidor de pesquisa de clima."
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterClima - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro no servidor de pesquisa de clima."})
+            reject({erro: "Houve um erro no servidor de pesquisa de clima."})
         }
     })
 }
@@ -341,35 +335,34 @@ export const obterClima = async (local) =>{
 export const obterLetraMusica = async (texto) =>{
     return new Promise(async (resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             const Client = new Genius.Client()
             await Client.songs.search(texto).then(async (pesquisaMusica)=>{
                 if(pesquisaMusica.length == 0) {
-                    resposta = {sucesso: false, erro: "A letra da música não foi encontrada"}
+                    resposta.erro = "A letra da música não foi encontrada"
                     reject(resposta)
                 } else {
                     let letraMusica = await pesquisaMusica[0].lyrics()
-                    resposta = {sucesso:true, resultado: {
+                    resposta.resultado = {
                         titulo: pesquisaMusica[0].title,
                         artista: pesquisaMusica[0].artist.name,
                         imagem : pesquisaMusica[0].artist.image,
                         letra: letraMusica
-                    }}
+                    }
                     resolve(resposta)
                 }
             }).catch((err)=>{
                 if(err.message == "No result was found"){
-                    resposta = {sucesso: false, erro: "A letra da música não foi encontrada"}
+                    resposta.erro = "A letra da música não foi encontrada"
                     reject(resposta)
                 } else {
-                    resposta = {sucesso: false, erro: "Houve um erro no servidor para obter a letra da música."}
+                    resposta.erro = "Houve um erro no servidor para obter a letra da música."
                     reject(resposta)
-                    throw err
                 }
             })
         } catch(err){
             console.log(`API obterLetraMusica - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro no servidor para obter a letra da música."})
+            reject({erro: "Houve um erro no servidor para obter a letra da música."})
         }
     })
 }
@@ -377,21 +370,21 @@ export const obterLetraMusica = async (texto) =>{
 export const obterConversaoMoeda = async (moeda, valor)=>{
     return new Promise(async (resolve, reject)=>{
         try {
-            let resposta = {sucesso: false}
+            let resposta = {}
             const moedasSuportadas = ['dolar','euro', 'real']
             moeda = moeda.toLowerCase()
             valor = valor.toString().replace(",",".")
 
             if(!moedasSuportadas.includes(moeda)){
-                resposta = {sucesso: false, erro: 'Moeda não suportada, atualmente existe suporte para : real|dolar|euro'}
+                resposta.erro = 'Moeda não suportada, atualmente existe suporte para : real|dolar|euro'
                 reject(resposta)
             }
             if(isNaN(valor)){
-                resposta = {sucesso: false, erro: 'O valor não é um número válido'}
+                resposta.erro = 'O valor não é um número válido'
                 reject(resposta)
             } 
             if(valor > 1000000000000000){
-                resposta = {sucesso: false, erro: 'Quantidade muito alta, você provavelmente não tem todo esse dinheiro.'}
+                resposta.erro = 'Quantidade muito alta, você provavelmente não tem todo esse dinheiro.'
                 reject(resposta)
             } 
 
@@ -415,14 +408,12 @@ export const obterConversaoMoeda = async (moeda, valor)=>{
                     break                  
             }
             await axios.get(`https://economia.awesomeapi.com.br/json/last/${params}`).then(({data})=>{
-                resposta = {
-                    sucesso: true,
-                    resultado : {
-                        valor_inserido : valor,
-                        moeda_inserida: moeda,
-                        conversao : []
-                    }
+                resposta.resultado = {
+                    valor_inserido : valor,
+                    moeda_inserida: moeda,
+                    conversao : []
                 }
+                
                 for (let conversao in data){
                     let nomeMoeda = '', tipoMoeda = '', simbolo = ''
                     switch(data[conversao].codein){
@@ -459,12 +450,12 @@ export const obterConversaoMoeda = async (moeda, valor)=>{
                     resolve(resposta)
                 }
             }).catch(()=>{
-                resposta = {sucesso: false, erro: 'Houve um erro no servidor de conversão de moedas'}
+                resposta.erro = 'Houve um erro no servidor de conversão de moedas'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterConversaoMoeda - ${err.message}`)
-            reject({sucesso: false, erro: 'Houve um erro no servidor de conversão de moedas'})
+            reject({erro: 'Houve um erro no servidor de conversão de moedas'})
         }
     })
 }
@@ -472,7 +463,7 @@ export const obterConversaoMoeda = async (moeda, valor)=>{
 export const obterCartasContraHu = async()=>{
     return new Promise(async (resolve, reject)=>{
         try {
-            let resposta = {sucesso: false}
+            let resposta = {}
             await axios.get("https://gist.githubusercontent.com/victorsouzaleal/bfbafb665a35436acc2310d51d754abb/raw/df5eee4e8abedbf1a18f031873d33f1e34ac338a/cartas.json").then(async (github_gist_cartas)=>{
                 let cartas = github_gist_cartas.data, cartaPretaAleatoria = Math.floor(Math.random() * cartas.cartas_pretas.length), cartaPretaEscolhida = cartas.cartas_pretas[cartaPretaAleatoria], cont_params = 1
                 if(cartaPretaEscolhida.indexOf("{p3}" != -1)) cont_params = 3
@@ -484,15 +475,15 @@ export const obterCartasContraHu = async()=>{
                     cartaPretaEscolhida = cartaPretaEscolhida.replace(`{p${i}}`, `*${cartaBrancaEscolhida}*`)
                     cartas.cartas_brancas.splice(cartas.cartas_brancas.indexOf(cartaBrancaEscolhida, 1))
                 }
-                resposta = {sucesso: true, resultado: cartaPretaEscolhida}
+                resposta.resultado = cartaPretaEscolhida
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso: false, erro: "Houve um erro no servidor para obter as cartas."}
+                resposta.erro = "Houve um erro no servidor para obter as cartas."
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterCartasContraHu- ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro no servidor para obter as cartas."})
+            reject({erro: "Houve um erro no servidor para obter as cartas."})
         }
     })
 
@@ -501,24 +492,27 @@ export const obterCartasContraHu = async()=>{
 export const obterInfoDDD = async(DDD)=>{
     return new Promise(async (resolve, reject)=>{
         try {
-            let resposta = {sucesso: false}
+            let resposta = {}
             await axios.get("https://gist.githubusercontent.com/victorsouzaleal/ea89a42a9f912c988bbc12c1f3c2d110/raw/af37319b023503be780bb1b6a02c92bcba9e50cc/ddd.json").then(async githubGistDDD=>{
                 let estados = githubGistDDD.data.estados
                 let indexDDD = estados.findIndex(estado => estado.ddd.includes(DDD))
                 if(indexDDD != -1){
-                    resposta = {sucesso:true, resultado: {estado: estados[indexDDD].nome, regiao: estados[indexDDD].regiao}}
+                    resposta.resultado = {
+                        estado: estados[indexDDD].nome,
+                        regiao: estados[indexDDD].regiao
+                    }
                     resolve(resposta)
                 } else {
-                    resposta = {sucesso: false, erro: 'Este DDD não foi encontrado, certifique-se que ele é válido.'}
+                    resposta.erro = 'Este DDD não foi encontrado, certifique-se que ele é válido.'
                     reject(resposta)
                 }
             }).catch(()=>{
-                resposta = {sucesso: false, erro: 'Houve um erro para obter dados sobre este DDD, tente novamente mais tarde.'}
+                resposta.erro = 'Houve um erro para obter dados sobre este DDD, tente novamente mais tarde.'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterInfoDDD - ${err.message}`)
-            reject({sucesso: false, erro: 'Houve um erro para obter dados sobre este DDD, tente novamente mais tarde.'})
+            reject({erro: 'Houve um erro para obter dados sobre este DDD, tente novamente mais tarde.'})
         }
     })
 }
@@ -526,17 +520,17 @@ export const obterInfoDDD = async(DDD)=>{
 export const obterTabelaNick = async()=>{
     return new Promise(async(resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             await axios.get("https://gist.githubusercontent.com/victorsouzaleal/9a58a572233167587e11683aa3544c8a/raw/aea5d03d251359b61771ec87cb513360d9721b8b/tabela.txt").then((githubGistTabela)=>{
-                resposta = {sucesso: true, resultado: githubGistTabela.data}
+                resposta.resultado = githubGistTabela.data
                 resolve(resposta)
             }).catch(()=>{
-                resposta = {sucesso: false, erro: 'Houve um erro para obter os dados, tente novamente mais tarde.'}
+                resposta.erro = 'Houve um erro para obter os dados, tente novamente mais tarde.'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterTabelaNick - ${err.message}`)
-            reject({sucesso: false, erro: 'Houve um erro para obter os dados, tente novamente mais tarde.'})
+            reject({erro: 'Houve um erro para obter os dados, tente novamente mais tarde.'})
         }
     })
 }

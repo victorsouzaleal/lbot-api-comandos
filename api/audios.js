@@ -13,16 +13,16 @@ export const textoParaVoz = async (idioma, texto)=>{
     return new Promise((resolve,reject)=>{
         try{
             let caminhoAudio =  obterCaminhoTemporario("mp3")
-            let resposta = {sucesso: false}
+            let resposta = {}
             tts(idioma).save(caminhoAudio, texto, ()=>{
                 let bufferAudio = fs.readFileSync(caminhoAudio)
                 fs.unlinkSync(caminhoAudio)
-                resposta = {sucesso: true, resultado: bufferAudio}
+                resposta.resultado = bufferAudio
                 resolve(resposta)
             })
         } catch(err){
             console.log(`API textoParaVoz - ${err.message}`)
-            reject({sucesso: false, erro: "Erro na conversão de texto para voz."})
+            reject({erro: "Erro na conversão de texto para voz."})
         } 
     })
 }
@@ -30,9 +30,9 @@ export const textoParaVoz = async (idioma, texto)=>{
 export const obterTranscricaoAudio = async (bufferAudio, {deepgram_secret_key})=>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             if(!deepgram_secret_key){
-                resposta = {sucesso : false, erro: "A chave do DEEPGRAM não foi inserida corretamente."}
+                resposta.erro = "A chave do DEEPGRAM não foi inserida corretamente."
                 reject(resposta)
             }
             const deepgram = createClient(deepgram_secret_key)
@@ -46,15 +46,15 @@ export const obterTranscricaoAudio = async (bufferAudio, {deepgram_secret_key})=
             )
     
             if(error){
-                resposta = {sucesso : false, erro: "Erro no servidor para obter a transcrição do áudio"}
+                resposta.erro = "Erro no servidor para obter a transcrição do áudio"
                 reject(resposta)
             } else {
-                resposta = {sucesso: true, resultado: result}
+                resposta.resultado = result
                 resolve(resposta)
             }
         } catch(err){
             console.log(`API obterTranscriçãoAudio - ${err.message}`)
-            reject({sucesso : false, erro: "Erro no servidor para obter a transcrição do áudio"})
+            reject({erro: "Erro no servidor para obter a transcrição do áudio."})
         }
     })
 }
@@ -62,7 +62,7 @@ export const obterTranscricaoAudio = async (bufferAudio, {deepgram_secret_key})=
 export const obterAudioModificado = async (bufferAudio, tipo) =>{
     return new Promise((resolve,reject)=>{
         try{
-            let resposta = {sucesso : false}
+            let resposta = {}
             let caminhoAudio = obterCaminhoTemporario('mp3')
             let saidaAudio = obterCaminhoTemporario('mp3')
             let ffmpegOpcoes = []
@@ -88,7 +88,8 @@ export const obterAudioModificado = async (bufferAudio, tipo) =>{
                     break
                 default:
                     fs.unlinkSync(caminhoAudio)
-                    reject({sucesso: false, erro: `Esse tipo de edição não é suportado`})
+                    resposta.erro = `Esse tipo de edição não é suportado`
+                    reject(resposta)
             }
             
             ffmpeg(caminhoAudio).outputOptions(ffmpegOpcoes).save(saidaAudio)
@@ -96,17 +97,17 @@ export const obterAudioModificado = async (bufferAudio, tipo) =>{
                 let bufferAudioEditado = fs.readFileSync(saidaAudio)
                 fs.unlinkSync(caminhoAudio)
                 fs.unlinkSync(saidaAudio)
-                resposta = {sucesso: true, resultado: bufferAudioEditado}
+                resposta.resultado = bufferAudioEditado
                 resolve(resposta)
             })
             .on("error", ()=>{
                 fs.unlinkSync(caminhoAudio)
-                resposta = {sucesso: false, erro: `Houve um erro na modificação do áudio`}
+                resposta.erro = `Houve um erro na modificação do áudio`
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterAudioModificado - ${err.message}`)
-            reject({sucesso: false, erro: `Houve um erro na modificação do áudio`})
+            reject({erro: `Houve um erro na modificação do áudio`})
         }
     })
 }
@@ -114,12 +115,12 @@ export const obterAudioModificado = async (bufferAudio, tipo) =>{
 export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_access_key, acr_access_secret}) =>{
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             let bufferAudio
             let {mime: tipoArquivo} = await fileTypeFromBuffer(bufferMidia)
 
             if(!acr_host || !acr_access_key || !acr_access_secret){
-                resposta = {sucesso: false, erro: 'As chaves do ACRCloud não foram inseridas corretamente'}
+                resposta.erro = 'As chaves do ACRCloud não foram inseridas corretamente'
                 reject(resposta)
             }
             
@@ -134,21 +135,21 @@ export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_acce
             } else if (tipoArquivo.startsWith('audio')){
                 bufferAudio = bufferMidia
             } else {
-                resposta = {sucesso: false, erro: 'Esse tipo de mensagem não é suportado.'}
+                resposta.erro = 'Esse tipo de mensagem não é suportado.'
                 reject(resposta)
             }
 
             await acr.identify(bufferAudio).then((resp)=>{
                 if(resp.status.code == 1001) {
-                    resposta = {sucesso: false, erro: 'Não foi encontrada uma música compatível.'}
+                    resposta.erro = 'Não foi encontrada uma música compatível.'
                     reject(resposta)
                 }
                 if(resp.status.code == 3003 || resp.status.code == 3015){
-                    resposta = {sucesso: false, erro: 'Você excedeu o limite do ACRCloud, crie uma nova chave no site'}
+                    resposta.erro = 'Você excedeu o limite do ACRCloud, crie uma nova chave no site'
                     reject(resposta)
                 } 
                 if(resp.status.code == 3000){
-                    resposta = {sucesso: false, erro: 'Houve um erro no servidor do ACRCloud, tente novamente mais tarde"'}
+                    resposta.erro = 'Houve um erro no servidor do ACRCloud, tente novamente mais tarde'
                     reject(resposta)
                 }
                 let arrayDataLancamento = resp.metadata.music[0].release_date.split("-")
@@ -156,22 +157,19 @@ export const obterReconhecimentoMusica = async (bufferMidia, {acr_host, acr_acce
                 for(let artista of resp.metadata.music[0].artists){
                     artistas.push(artista.name)
                 }
-                resposta =  {
-                    sucesso: true,
-                    resultado:{
-                        produtora : resp.metadata.music[0].label || "-----",
-                        duracao: duration.default(resp.metadata.music[0].duration_ms).format("m:ss"),
-                        lancamento: `${arrayDataLancamento[2]}/${arrayDataLancamento[1]}/${arrayDataLancamento[0]}`,
-                        album: resp.metadata.music[0].album.name,
-                        titulo: resp.metadata.music[0].title,
-                        artistas: artistas.toString()
-                    }
+                resposta.resultado = {
+                    produtora : resp.metadata.music[0].label || "-----",
+                    duracao: duration.default(resp.metadata.music[0].duration_ms).format("m:ss"),
+                    lancamento: `${arrayDataLancamento[2]}/${arrayDataLancamento[1]}/${arrayDataLancamento[0]}`,
+                    album: resp.metadata.music[0].album.name,
+                    titulo: resp.metadata.music[0].title,
+                    artistas: artistas.toString()
                 }
                 resolve(resposta)
             })
         } catch(err){
             console.log(`API obterReconhecimentoMusica - ${err.message}`)
-            reject({sucesso: false, erro: 'Erro na conexão com a API ACRCloud ou sua chave ainda não está configurada para usar este comando.'})
+            reject({erro: 'Erro na conexão com a API ACRCloud ou sua chave ainda não está configurada para usar este comando.'})
         }
     })
 }

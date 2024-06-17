@@ -6,7 +6,7 @@ import {obterCaminhoTemporario} from '../lib/util.js'
 export const converterMp4ParaMp3 = (bufferVideo) => {
     return new Promise((resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             let caminhoVideo = obterCaminhoTemporario('mp4')
             fs.writeFileSync(caminhoVideo, bufferVideo)
             let saidaAudio = obterCaminhoTemporario('mp3')
@@ -17,17 +17,17 @@ export const converterMp4ParaMp3 = (bufferVideo) => {
                 let bufferAudio = fs.readFileSync(saidaAudio)
                 fs.unlinkSync(caminhoVideo)
                 fs.unlinkSync(saidaAudio)
-                resposta = {sucesso: true, resultado : bufferAudio}
+                resposta.resultado = bufferAudio
                 resolve(resposta)
             })
             .on("error", (err)=>{
                 fs.unlinkSync(caminhoVideo)
-                resposta = {sucesso: false, resultado : 'Houve um erro na conversão para MP3.'}
+                resposta.erro = 'Houve um erro na conversão para MP3.'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API converterMp4ParaMp3 - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro na conversão para MP3."})
+            reject({erro: "Houve um erro na conversão para MP3."})
         }
     })
 }
@@ -35,7 +35,7 @@ export const converterMp4ParaMp3 = (bufferVideo) => {
 export const obterThumbnailVideo = async(midia, tipo = "file") =>{
     return new Promise(async (resolve,reject)=>{
         try{
-            let resposta = {sucesso: false}
+            let resposta = {}
             let caminhoEntrada
             let saidaThumbImagem = obterCaminhoTemporario('jpg')
             if(tipo == "file"){
@@ -58,16 +58,16 @@ export const obterThumbnailVideo = async(midia, tipo = "file") =>{
                 if(tipo != 'file') fs.unlinkSync(caminhoEntrada)
                 let thumbBase64 = fs.readFileSync(saidaThumbImagem).toString('base64')
                 fs.unlinkSync(saidaThumbImagem)
-                resposta = {sucesso: true, resultado : thumbBase64}
+                resposta.resultado = thumbBase64
                 resolve(resposta)
             })
             .on('error', (err)=>{
-                resposta = {sucesso: false, resultado : 'Houve um erro ao obter a thumbnail do video.'}
+                resposta.erro = 'Houve um erro ao obter a thumbnail do video.'
                 reject(resposta)
             })
         } catch(err){
             console.log(`API obterThumbnailVideo - ${err.message}`)
-            reject({sucesso: false, erro: "Houve um erro ao obter a thumbnail do video."})
+            reject({erro: "Houve um erro ao obter a thumbnail do video."})
         }
         
     })
