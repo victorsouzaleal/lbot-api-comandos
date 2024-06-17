@@ -67,7 +67,7 @@ export const obterDadosBrasileirao = async(serie = "A")=>{
             let resposta = {}
             let dadosBrasileirao
             if(serie === 'A') dadosBrasileirao = await obterDadosBrasileiraoA()
-            if(serie === 'B') dadosBrasileirao = await obterDadosBrasileiraoB()
+            else if(serie === 'B') dadosBrasileirao = await obterDadosBrasileiraoB()
             else {
                 resposta.erro = "A série inserida não é suportada, apenas A e B."
                 reject(resposta)
