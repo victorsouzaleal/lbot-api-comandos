@@ -1,6 +1,6 @@
 {
   "name": "@victorsouzaleal/lbot-api-comandos",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Conjunto de API's que são usados para os comandos do LBOT",
   "main": "index.js",
   "repository": "https://github.com/victorsouzaleal/lbot-api-comandos.git",
