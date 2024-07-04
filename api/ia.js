@@ -33,6 +33,7 @@ export const obterImagemIA = async(texto)=>{
             let resposta = {}
             let {resultado} = await obterTraducao(texto, 'en')
             await herc.betaDrawImage({prompt: resultado, width: 256, height:256}).then((respostaHercai)=>{
+
                 if(respostaHercai.status == 404) {
                     resposta.erro = 'O texto que você colocou é inválido ou não pode ser criado.'
                     reject(resposta)
@@ -40,6 +41,10 @@ export const obterImagemIA = async(texto)=>{
                     resposta.erro = 'Houve um erro para criar a imagem, o projeto ainda está em BETA então tente novamente.'
                     reject(resposta)
                 } else {
+                    if(!respostaHercai.url){
+                        resposta.erro = 'Houve um erro no servidor, tente novamente mais tarde.'
+                        reject(resposta)
+                    }
                     resposta.resultado = respostaHercai.url
                     resolve(resposta)
                 }

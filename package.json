@@ -27,7 +27,7 @@
     "format-duration-time": "^1.5.4",
     "fs-extra": "^9.0.1",
     "genius-lyrics": "^4.2.9",
-    "hercai": "^12.2.0",
+    "hercai": "^12.3.1",
     "instagram-url-direct": "^1.0.16",
     "jimp": "^0.22.12",
     "jsdom": "^24.1.0",
