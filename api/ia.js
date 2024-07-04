@@ -33,7 +33,6 @@ export const obterImagemIA = async(texto)=>{
             let resposta = {}
             let {resultado} = await obterTraducao(texto, 'en')
             await herc.betaDrawImage({prompt: resultado, width: 256, height:256}).then((respostaHercai)=>{
-
                 if(respostaHercai.status == 404) {
                     resposta.erro = 'O texto que você colocou é inválido ou não pode ser criado.'
                     reject(resposta)
@@ -44,9 +43,10 @@ export const obterImagemIA = async(texto)=>{
                     if(!respostaHercai.url){
                         resposta.erro = 'Houve um erro no servidor, tente novamente mais tarde.'
                         reject(resposta)
+                    } else {
+                        resposta.resultado = respostaHercai.url
+                        resolve(resposta)
                     }
-                    resposta.resultado = respostaHercai.url
-                    resolve(resposta)
                 }
             }).catch((erro)=>{
                 if(erro.message == 'Error: Request failed with status code 429'){
