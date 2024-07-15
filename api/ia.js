@@ -32,7 +32,7 @@ export const obterImagemIA = async(texto)=>{
             const herc = new Hercai()
             let resposta = {}
             let {resultado} = await obterTraducao(texto, 'en')
-            await herc.betaDrawImage({prompt: resultado, width: 256, height:256}).then((respostaHercai)=>{
+            await herc.drawImage({model: 'prodia', prompt: resultado}).then((respostaHercai)=>{
                 if(respostaHercai.status == 404) {
                     resposta.erro = 'O texto que você colocou é inválido ou não pode ser criado.'
                     reject(resposta)

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^3.2.0",
+    "@distube/ytdl-core": "^4.13.5",
     "@tobyg74/tiktok-api-dl": "^1.1.2",
     "@victorsouzaleal/brasileirao": "^1.0.0",
     "@victorsouzaleal/googlethis": "^1.8.1",
@@ -27,7 +28,7 @@
     "format-duration-time": "^1.5.4",
     "fs-extra": "^9.0.1",
     "genius-lyrics": "^4.2.9",
-    "hercai": "^12.3.1",
+    "hercai": "^12.3.2",
     "instagram-url-direct": "^1.0.16",
     "jimp": "^0.22.12",
     "jsdom": "^24.1.0",
@@ -38,8 +39,7 @@
     "pretty-num": "^0.5.0",
     "twitter-downloader": "^1.1.7",
     "user-agents": "^1.1.231",
-    "youtube-sr": "^4.2.0",
-    "ytdl-core": "4.11.5"
+    "youtube-sr": "^4.2.0"
   },
   "optionalDependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0"
