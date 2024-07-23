@@ -252,9 +252,9 @@ export const obterPesquisaWeb = async (texto) =>{
                     resposta.erro = "Não foram encontrados resultados para esta pesquisa."
                     reject(resposta)
                 } else {
-                    resposta.resultados = []
+                    resposta.resultado = []
                     for(let resultado of resultados.results){
-                        resposta.resultados.push({
+                        resposta.resultado.push({
                             titulo: resultado.title,
                             link: resultado.url,
                             descricao : resultado.description
