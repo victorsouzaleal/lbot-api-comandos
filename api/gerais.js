@@ -15,15 +15,16 @@ export const obterAnimesLancamento = async()=>{
     return new Promise(async(resolve, reject) =>{
         try{
             let resposta = {}
-            const URL_BASE = 'https://www.hinatasoul.com'
+            const URL_BASE = 'https://animefire.plus/'
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
-            const $animes = document.querySelectorAll('div.epiContainer:nth-child(5) > div')
+            const $animes = document.querySelectorAll('div.divCardUltimosEpsHome')
+            console.log($animes.length)
             let animes = []
             $animes.forEach($anime =>{
                 animes.push({
-                    nome: $anime.querySelector('a').getAttribute('title').trim(),
-                    episodio: $anime.querySelector('div.ultimosEpisodiosHomeItemInfosNum').innerHTML.replace(/(\r\n\t|\n|\r|\t)/gm, ""),
+                    nome: $anime.querySelector('h3').innerHTML,
+                    episodio: $anime.querySelector('span.numEp').innerHTML,
                     link: $anime.querySelector('a').href
                 })
             })
