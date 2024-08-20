@@ -19,7 +19,6 @@ export const obterAnimesLancamento = async()=>{
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
             const $animes = document.querySelectorAll('div.divCardUltimosEpsHome')
-            console.log($animes.length)
             let animes = []
             $animes.forEach($anime =>{
                 animes.push({
