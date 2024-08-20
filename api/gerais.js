@@ -18,7 +18,7 @@ export const obterAnimesLancamento = async()=>{
             const URL_BASE = 'https://www.hinatasoul.com'
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
-            const $animes = document.querySelectorAll('div.mainContainer.mwidth > div:nth-child(6) > div.ultimosEpisodiosHomeItem')
+            const $animes = document.querySelectorAll('div.epiContainer:nth-child(5) > div')
             let animes = []
             $animes.forEach($anime =>{
                 animes.push({
