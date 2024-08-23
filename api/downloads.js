@@ -101,22 +101,18 @@ export const obterMidiaFacebook = async(url)=>{
 
 }
 
-export const obterMidiaInstagram = async(url, selecao = null)=>{
+export const obterMidiaInstagram = async(url)=>{
     return new Promise(async(resolve, reject)=>{
         try{
             let resposta = {}
             await instagramGetUrl(url).then(async (res)=>{
-                selecao = selecao ? selecao - 1 : 0
-                const linkSelecionado = res.url_list[selecao]
-                if(!linkSelecionado || !linkSelecionado.length){
-                    resposta.erro = "Mídia não encontrada, se o numero do video selecionado está correto e existe."
-                    reject(resposta)
+                resposta.resultado = []
+                for (const url of res.url_list) {
+                    const {data, headers} = await axios.get(url, { responseType: 'arraybuffer' })
+                    const buffer = Buffer.from(data, 'utf-8')
+                    const tipo = headers['content-type'] == 'video/mp4' ? 'video' : 'imagem'
+                    resposta.resultado.push({tipo, buffer})
                 }
-                const {data, headers} = await axios.get(linkSelecionado,  { responseType: 'arraybuffer' })
-                const bufferIg = Buffer.from(data, 'utf-8')
-                resposta.resultado = {buffer: bufferIg}
-                if(headers['content-type'] == 'image/jpeg') resposta.resultado.tipo = "imagem"
-                else if (headers['content-type'] == 'video/mp4') resposta.resultado.tipo = "video"
                 resolve(resposta)
             }).catch(()=>{
                 resposta.erro = "Erro ao obter o video, verifique o link ou tente mais tarde."
