@@ -40,16 +40,16 @@ export const obterMangasLancamento = async()=>{
     return new Promise(async(resolve, reject) =>{
         try{
             let resposta = {}
-            const URL_BASE = 'https://mugiwarasoficial.com/'
+            const URL_BASE = 'https://mangabr.net/'
             const {data} = await axios.get(URL_BASE, {headers: {"User-Agent": new UserAgent().toString()}})
             const {window:{document}} = new JSDOM(data)
-            const $mangas = document.querySelectorAll('div.page-item-detail.manga')
+            const $mangas = document.querySelectorAll('div.col-6.col-sm-3.col-md-3.col-lg-2.p-1')
             let mangas = []
             $mangas.forEach($manga =>{
                 mangas.push({
-                    nome: $manga.querySelector('div.item-summary > div > h3 > a').innerHTML.trim(),
-                    capitulo: $manga.querySelector('div.item-summary > div.list-chapter > div > span > a').innerHTML.trim(),
-                    link: $manga.querySelector('div.item-summary > div.list-chapter > div > span > a').href
+                    nome: $manga.querySelector('h3.chapter-title > span.series-name').innerHTML.trim(),
+                    capitulo: $manga.querySelector('h3.chapter-title > span.chapter-name').innerHTML.trim(),
+                    link: `https://mangabr.net${$manga.querySelector('a.link-chapter').href}`  
                 })
             })
             resposta.resultado = mangas
