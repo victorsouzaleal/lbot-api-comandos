@@ -8,7 +8,7 @@ export const obterRespostaIA = async(texto, id_usuario)=>{
         try{
             let resposta = {}
             const herc = new Hercai()
-            await herc.betaQuestion({content: texto, user: id_usuario}).then((respostaHercai)=>{
+            await herc.question({content: texto, model: "gemini"}).then((respostaHercai)=>{
                 resposta.resultado = respostaHercai.reply
                 resolve(resposta)
             }).catch((err)=>{
