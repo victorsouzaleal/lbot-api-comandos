@@ -1,5 +1,5 @@
 import fs from 'fs-extra'
-import {obterCaminhoTemporario} from '../lib/util.js'
+import {obterCaminhoTemporario, formatarSegundos} from '../lib/util.js'
 import {converterMp4ParaMp3} from './videos.js'
 import Youtube from 'youtube-sr'
 import ytdl from '@distube/ytdl-core'
@@ -129,20 +129,34 @@ export const obterMidiaInstagram = async(url)=>{
 export const obterInfoVideoYT = async(texto)=>{ 
     return new Promise(async (resolve, reject)=>{
         try{
-            let resposta = {}
-            await Youtube.default.searchOne(texto).then(async pesquisaVideo =>{
-                await ytdl.getBasicInfo(pesquisaVideo.id, {agent: yt_agent}).then(infovideo=>{
-                    resposta.resultado = infovideo.player_response.videoDetails
-                    resposta.resultado.durationFormatted = pesquisaVideo.durationFormatted
-                    resolve(resposta)                       
-                }).catch((err)=>{
-                    if(err.message == "Status code: 410") resposta.erro = 'O video parece ter restrição de idade ou precisa de ter login para assistir.' 
-                    else resposta.erro = 'Houve um erro ao obter as informações do video.'
-                    reject(resposta)
+            let resposta = {}, id_video = ''
+            //Checagem do ID do video
+            const URL_VALIDA = ytdl.validateURL(texto)
+            if(URL_VALIDA){
+                id_video = ytdl.getVideoID(texto)
+            } else {
+                await Youtube.default.searchOne(texto).then((pesquisaVideo)=>{
+                    id_video = pesquisaVideo.id
+                }).catch(()=>{
+                    resposta.erro = 'Houve um erro ao obter as informações do video.'
+                    reject(resposta) 
                 })
-            }).catch(()=>{
-                resposta.erro = 'Houve um erro ao obter as informações do video.'
-                reject(resposta) 
+            }
+            //Obtendo informações do video
+            ytdl.getInfo(id_video, { 
+                playerClients: ["IOS", "WEB_CREATOR", "ANDROID", "WEB"], 
+                agent: yt_agent
+            }).then(infovideo=>{
+                const formats = ytdl.filterFormats(infovideo.formats, "videoandaudio");
+                const format = ytdl.chooseFormat(formats, {quality: 'highest'})
+                resposta.resultado = infovideo.player_response.videoDetails
+                resposta.resultado.durationFormatted = formatarSegundos(infovideo.player_response.videoDetails.lengthSeconds)
+                resposta.resultado.format = format
+                resolve(resposta)                       
+            }).catch((err)=>{
+                if(err.message == "Status code: 410") resposta.erro = 'O video parece ter restrição de idade ou precisa de ter login para assistir.' 
+                else resposta.erro = 'Houve um erro ao obter as informações do video.'
+                reject(resposta)
             })
         } catch(err){
             console.log(`API obterInfoVideoYT - ${err.message}`)
@@ -155,8 +169,8 @@ export const obterYTMP3 = async(id_video)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {}
-            let {resultado} = await obterYTMP4(id_video)
-            let bufferAudio = (await converterMp4ParaMp3(resultado)).resultado
+            let {resultado : bufferVideo} = await obterYTMP4(id_video)
+            let {resultado : bufferAudio} = await converterMp4ParaMp3(bufferVideo)
             resposta.resultado = bufferAudio
             resolve(resposta)
         } catch(err){
@@ -166,12 +180,13 @@ export const obterYTMP3 = async(id_video)=>{
     })
 }
 
-export const obterYTMP4 = async(id_video) =>{
-    return new Promise ((resolve, reject)=>{
+export const obterYTMP4 = async(texto) =>{
+    return new Promise (async (resolve, reject)=>{
         try{
             let resposta = {}
             let saidaVideo = obterCaminhoTemporario('mp4')
-            let videoStream = ytdl(id_video, {quality: "highest", filter:"videoandaudio", agent: yt_agent})
+            let {resultado : infoVideo} = await obterInfoVideoYT(texto)
+            let videoStream = ytdl(infoVideo.videoId, {format: infoVideo.format, agent: yt_agent})
             videoStream.pipe(fs.createWriteStream(saidaVideo))
             videoStream.on("end", ()=>{
                 let bufferVideo = fs.readFileSync(saidaVideo)
