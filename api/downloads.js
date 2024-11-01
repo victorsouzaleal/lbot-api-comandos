@@ -165,11 +165,11 @@ export const obterInfoVideoYT = async(texto)=>{
     })
 }
 
-export const obterYTMP3 = async(id_video)=>{
+export const obterYTMP3 = async(texto)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {}
-            let {resultado : bufferVideo} = await obterYTMP4(id_video)
+            let {resultado : bufferVideo} = await obterYTMP4(texto)
             let {resultado : bufferAudio} = await converterMp4ParaMp3(bufferVideo)
             resposta.resultado = bufferAudio
             resolve(resposta)
