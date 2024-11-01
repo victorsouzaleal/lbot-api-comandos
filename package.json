@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^3.5.1",
-    "@distube/ytdl-core": "4.14.4",
+    "@distube/ytdl-core": "^4.15.1",
     "@tobyg74/tiktok-api-dl": "^1.1.9",
     "@victorsouzaleal/brasileirao": "^1.0.0",
     "@victorsouzaleal/googlethis": "^1.8.1",
