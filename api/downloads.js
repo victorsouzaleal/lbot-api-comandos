@@ -63,15 +63,16 @@ export const obterMidiaTiktok = async(url)=>{
                     resposta.resultado = {
                         autor_perfil: resultado.result?.author.nickname,
                         descricao : resultado.result?.description,
-                        duracao: parseInt(((resultado.result.video.duration)/1000).toFixed(0)),
-                        url: resultado.result?.video.playAddr[0] || resultado.result?.images[0]
+                        duracao: resultado.result.type == "video" ? parseInt(((resultado.result.video.duration)/1000).toFixed(0)) : null,
+                        url: resultado.result.type == "video" ? resultado.result?.video.playAddr[0] : resultado.result?.images[0]
                     }
                     resolve(resposta)
                 } else {
                     resposta.erro = 'Não foi encontrado resultado para este link, verifique o link.'
                     reject(resposta)
                 }
-            }).catch(()=>{
+            }).catch((err)=>{
+                console.log(err)
                 resposta.erro = 'Houve um erro no servidor de download do TikTok.'
                 reject(resposta)
             })
