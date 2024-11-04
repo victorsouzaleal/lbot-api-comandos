@@ -58,13 +58,13 @@ export const obterMidiaTiktok = async(url)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {}
-            await Tiktok.Downloader(url, {version: "v2"}).then((resultado)=>{
+            await Tiktok.Downloader(url, {version: "v1"}).then((resultado)=>{
                 if(resultado.status == "success"){
                     resposta.resultado = {
                         autor_perfil: resultado.result?.author.nickname,
-                        descricao : resultado.result?.desc,
-                        //duracao: ((resultado.result.video.duration)/1000).toFixed(0),
-                        url: resultado.result?.video || resultado.result?.images[0]
+                        descricao : resultado.result?.description,
+                        duracao: parseInt(((resultado.result.video.duration)/1000).toFixed(0)),
+                        url: resultado.result?.video.playAddr[0] || resultado.result?.images[0]
                     }
                     resolve(resposta)
                 } else {
