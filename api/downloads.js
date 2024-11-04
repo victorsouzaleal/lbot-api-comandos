@@ -63,8 +63,9 @@ export const obterMidiaTiktok = async(url)=>{
                     resposta.resultado = {
                         autor_perfil: resultado.result?.author.nickname,
                         descricao : resultado.result?.description,
+                        tipo: resultado.result.type == "video" ? "video" : "imagem",
                         duracao: resultado.result.type == "video" ? parseInt(((resultado.result.video.duration)/1000).toFixed(0)) : null,
-                        url: resultado.result.type == "video" ? resultado.result?.video.playAddr[0] : resultado.result?.images[0]
+                        url: resultado.result.type == "video" ? resultado.result?.video.playAddr[0] : resultado.result?.images
                     }
                     resolve(resposta)
                 } else {
