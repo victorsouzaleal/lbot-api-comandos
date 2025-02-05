@@ -3,12 +3,12 @@ import { Hercai } from "hercai"
 import qs from 'node:querystring'
 import {obterTraducao} from './gerais.js'
 
-export const obterRespostaIA = async(texto, id_usuario)=>{
+export const obterRespostaIA = async(texto)=>{
     return new Promise(async (resolve, reject)=>{
         try{
             let resposta = {}
             const herc = new Hercai()
-            await herc.question({content: texto, model: "gemini"}).then((respostaHercai)=>{
+            await herc.question({content: texto, model: "v3"}).then((respostaHercai)=>{
                 resposta.resultado = respostaHercai.reply
                 resolve(resposta)
             }).catch((err)=>{
@@ -32,7 +32,7 @@ export const obterImagemIA = async(texto)=>{
             const herc = new Hercai()
             let resposta = {}
             let {resultado} = await obterTraducao(texto, 'en')
-            await herc.drawImage({model: 'prodia', prompt: resultado}).then((respostaHercai)=>{
+            await herc.drawImage({model: 'v3', prompt: resultado}).then((respostaHercai)=>{
                 if(respostaHercai.status == 404) {
                     resposta.erro = 'O texto que você colocou é inválido ou não pode ser criado.'
                     reject(resposta)
