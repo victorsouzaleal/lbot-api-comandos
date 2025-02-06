@@ -3,10 +3,15 @@ import fs from 'fs-extra'
 import axios from 'axios'
 import {obterCaminhoTemporario} from '../lib/util.js'
 
-export const converterMp4ParaMp3 = (bufferVideo) => {
-    return new Promise((resolve,reject)=>{
+interface ResConverterMp4ParaMp3 {
+    resultado?: Buffer
+    erro?: string
+}
+
+export const converterMp4ParaMp3 = (bufferVideo: Buffer) => {
+    return new Promise <ResConverterMp4ParaMp3> ((resolve,reject)=>{
         try{
-            let resposta = {}
+            let resposta : ResConverterMp4ParaMp3 = {}
             let caminhoVideo = obterCaminhoTemporario('mp4')
             fs.writeFileSync(caminhoVideo, bufferVideo)
             let saidaAudio = obterCaminhoTemporario('mp3')
@@ -25,26 +30,32 @@ export const converterMp4ParaMp3 = (bufferVideo) => {
                 resposta.erro = 'Houve um erro na conversão para MP3.'
                 reject(resposta)
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API converterMp4ParaMp3 - ${err.message}`)
             reject({erro: "Houve um erro na conversão para MP3."})
         }
     })
 }
 
-export const obterThumbnailVideo = async(midia, tipo = "file") =>{
-    return new Promise(async (resolve,reject)=>{
+
+interface ResObterThumbnailVideo {
+    resultado?: string
+    erro?: string
+}
+
+export const obterThumbnailVideo = async(midia : string | Buffer, tipo = "file") =>{
+    return new Promise <ResObterThumbnailVideo> (async (resolve,reject)=>{
         try{
-            let resposta = {}
-            let caminhoEntrada
+            let resposta : ResObterThumbnailVideo = {}
+            let caminhoEntrada : string = ''
             let saidaThumbImagem = obterCaminhoTemporario('jpg')
             if(tipo == "file"){
-                caminhoEntrada = midia
+                caminhoEntrada = midia as string
             } else if(tipo == "buffer"){
                 caminhoEntrada = obterCaminhoTemporario('mp4')
-                fs.writeFileSync(caminhoEntrada, midia)
+                fs.writeFileSync(caminhoEntrada, midia as Buffer)
             } else if(tipo == "url"){
-                let urlResponse = await axios.get(midia,  { responseType: 'arraybuffer' })
+                let urlResponse = await axios.get(midia as string,  { responseType: 'arraybuffer' })
                 let bufferUrl = Buffer.from(urlResponse.data, "utf-8")
                 caminhoEntrada = obterCaminhoTemporario('mp4')
                 fs.writeFileSync(caminhoEntrada, bufferUrl)
@@ -65,7 +76,7 @@ export const obterThumbnailVideo = async(midia, tipo = "file") =>{
                 resposta.erro = 'Houve um erro ao obter a thumbnail do video.'
                 reject(resposta)
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API obterThumbnailVideo - ${err.message}`)
             reject({erro: "Houve um erro ao obter a thumbnail do video."})
         }

@@ -2,22 +2,24 @@
   "name": "@victorsouzaleal/lbot-api-comandos",
   "version": "1.0.24",
   "description": "Conjunto de API's que são usados para os comandos do LBOT",
-  "main": "index.js",
+  "main": "build/api.js",
+  "types": "build/api.d.ts",
   "repository": "https://github.com/victorsouzaleal/lbot-api-comandos.git",
   "author": "victorsouzaleal <victorsouzaleal@gmail.com>",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node build/api.js",
+    "prestart": "npm run build",
+    "build": "tsc"
   },
   "dependencies": {
     "@deepgram/sdk": "^3.5.1",
-    "@distube/ytdl-core": "^4.15.1",
+    "@distube/ytdl-core": "^4.16.0",
     "@tobyg74/tiktok-api-dl": "^1.1.9",
     "@victorsouzaleal/brasileirao": "^1.0.0",
     "@victorsouzaleal/googlethis": "^1.8.1",
     "@vitalets/google-translate-api": "^7.0.0",
-    "acrcloud": "^1.4.0",
     "axios": "^1.7.4",
     "correios-brasil": "^2.2.2",
     "emoji-mixer": "^1.1.12",
@@ -43,5 +45,14 @@
   "optionalDependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0"
   },
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.27",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.13.1",
+    "@types/user-agents": "^1.0.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
 }

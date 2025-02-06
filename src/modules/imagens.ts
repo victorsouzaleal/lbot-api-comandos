@@ -7,11 +7,15 @@ import getEmojiMixUrl, {checkSupported} from 'emoji-mixer'
 import qs from 'node:querystring'
 import {ImageUploadService} from 'node-upload-images'
 
+interface ResImagemUpload {
+    resultado?: string
+    erro?: string
+}
 
-export const imagemUpload = async (bufferImagem) =>{
-    return new Promise(async (resolve, reject)=>{
+export const imagemUpload = async (bufferImagem : Buffer) =>{
+    return new Promise <ResImagemUpload> (async (resolve, reject)=>{
         try{
-            let resposta = {}
+            let resposta : ResImagemUpload = {}
             const service = new ImageUploadService('pixhost.to')
             await service.uploadFromBinary(bufferImagem, obterNomeAleatorio("png")).then(({directLink})=>{
                 resposta.resultado = directLink
@@ -20,14 +24,15 @@ export const imagemUpload = async (bufferImagem) =>{
                 resposta.erro = `Houve um erro no upload da imagem`
                 reject(resposta)
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API imagemUpload - ${err.message}`)
             reject({erro: `Houve um erro no upload da imagem`})
         }
     })
 }
 
-export const textoParaImagem = async(texto, animado = false)=>{
+/* API PAROU DE FUNCIONAR
+export const textoParaImagem = async(texto : string, animado = false)=>{
     return new Promise(async(resolve,reject)=>{
         try{
             let resposta = {}
@@ -45,12 +50,17 @@ export const textoParaImagem = async(texto, animado = false)=>{
         }
     })
 
+} */
+
+interface ResMisturarEmojis {
+    resultado?: Buffer
+    erro?: string
 }
 
-export const misturarEmojis = async (emoji1, emoji2)=>{
-    return new Promise(async (resolve, reject)=>{
+export const misturarEmojis = async (emoji1: string, emoji2: string)=>{
+    return new Promise <ResMisturarEmojis> (async (resolve, reject)=>{
         try{
-            let resposta = {}
+            let resposta : ResMisturarEmojis = {}
             let suporteEmoji1  = checkSupported(emoji1, true), suporteEmoji2  = checkSupported(emoji2, true)
             if(!suporteEmoji1 || !suporteEmoji2){
                 if(!suporteEmoji1) resposta.erro = `${emoji1} não é válido para a união.`
@@ -71,20 +81,27 @@ export const misturarEmojis = async (emoji1, emoji2)=>{
                 resposta.erro = "Emojis não compatíveis para união"
                 reject(resposta)
             }
-        } catch(err){
+        } catch(err : any){
             console.log(`API misturarEmojis- ${err.message}`)
             reject({erro: "Emojis não compatíveis"})
         }
     })
 }
 
-export const removerFundo = async(bufferImagem)=>{
-    return new Promise(async (resolve,reject)=>{
+
+interface ResRemoverFundo {
+    resultado?: Buffer
+    erro?: string
+}
+
+export const removerFundo = async(bufferImagem: Buffer)=>{
+    return new Promise <ResRemoverFundo> (async (resolve,reject)=>{
         try{
-            let resposta = {}
+            let resposta : ResRemoverFundo = {}
+            //Upload da imagem
             let nomeArquivo = obterNomeAleatorio("png")
-            let data = new FormData();
-            data.append('files', bufferImagem, {filename: nomeArquivo})
+            let formDataUpload = new FormData();
+            formDataUpload.append('files', bufferImagem, {filename: nomeArquivo})
     
             let config = {
                 method: 'post',
@@ -99,29 +116,32 @@ export const removerFundo = async(bufferImagem)=>{
                     'Sec-Fetch-Dest': ' empty', 
                     'Sec-Fetch-Mode': ' cors', 
                     'Sec-Fetch-Site': ' same-site', 
-                    ...data.getHeaders()
+                    ...formDataUpload.getHeaders()
                 },
-                data : data
+                data : formDataUpload
             }
+
+
     
             let respostaUpload = await axios.request(config).catch(()=>{
                 resposta.erro = "Erro no servidor de upload"
                 reject(resposta)
             })
     
-            let dadosUpload = JSON.parse(JSON.stringify(respostaUpload.data))
+            let dadosUpload = JSON.parse(JSON.stringify(respostaUpload?.data))
     
             if(!dadosUpload.isSuccess){
                 resposta.erro = "Tamanho da foto excedeu o limite"
                 reject(resposta)
             }
-    
-            data = qs.stringify({
-                'name': dadosUpload.files[0].name,
-                'originalname': dadosUpload.files[0].old_name,
-                'option3': dadosUpload.files[0].extension,
-                'option4': '1' 
-            });
+
+            // Remoção de fundo
+            let formDataRemove = new FormData()
+            formDataRemove.append('name', dadosUpload.files[0].name)
+            formDataRemove.append('originalname', dadosUpload.files[0].old_name)
+            formDataRemove.append('option3', dadosUpload.files[0].extension)
+            formDataRemove.append('option4', '1')
+
             
             config = {
                 method: 'post',
@@ -130,9 +150,6 @@ export const removerFundo = async(bufferImagem)=>{
                 headers: { 
                 'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0', 
                 'Accept': ' */*', 
-                'Accept-Language': ' pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3', 
-                'Accept-Encoding': ' gzip, deflate, br', 
-                'Content-Type': 'application/x-www-form-urlencoded', 
                 'Origin': ' https://imageonline.co', 
                 'Connection': ' keep-alive', 
                 'Referer': ' https://imageonline.co/', 
@@ -140,7 +157,7 @@ export const removerFundo = async(bufferImagem)=>{
                 'Sec-Fetch-Mode': ' cors', 
                 'Sec-Fetch-Site': ' same-site'
                 },
-                data : data
+                data : formDataRemove
             }
     
             let respostaFotoUrl = await axios.request(config).catch(()=>{
@@ -148,7 +165,7 @@ export const removerFundo = async(bufferImagem)=>{
                 reject(resposta)
             })
 
-            let fotoUrl = respostaFotoUrl.data.match(/https:\/\/download1\.imageonline\.co\/download\.php\?filename=[A-Za-z0-9]+-imageonline\.co-[0-9]+\.png/m)
+            let fotoUrl = respostaFotoUrl?.data.match(/https:\/\/download1\.imageonline\.co\/download\.php\?filename=[A-Za-z0-9]+-imageonline\.co-[0-9]+\.png/m)
             await axios.get(fotoUrl[0], {responseType: 'arraybuffer'}).then((imagemBufferResposta)=>{
                 resposta.resultado = imagemBufferResposta.data
                 resolve(resposta)
@@ -156,31 +173,45 @@ export const removerFundo = async(bufferImagem)=>{
                 resposta.erro = "Erro ao baixar a imagem sem fundo"
                 reject(resposta)
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API removerFundo - ${err.message}`)
             reject({erro: "Erro geral ao remover o fundo."})
         }
     })
 }
 
-export const obterAnimeInfo = async (bufferImagem)=>{ 
-    return new Promise(async (resolve, reject)=>{
+
+interface ResAnimeInfo {
+    resultado?: {
+        tempoInicial : string,
+        tempoFinal : string,
+        episodio : string,
+        titulo : string,
+        similaridade : string,
+        link_previa: string
+    }
+    erro?: string
+}
+
+export const obterAnimeInfo = async (bufferImagem : Buffer)=>{ 
+    return new Promise <ResAnimeInfo> (async (resolve, reject)=>{
         try{
-            let resposta = {}
+            let resposta : ResAnimeInfo = {}
             await fetch(`https://api.trace.moe/search?anilistInfo`,{
                     method: "POST",
                     body: bufferImagem,
                     headers: { "Content-type": "image/jpeg" },
             }).then(async (res)=>{
+                let data : {result: any[]} = await res.json()
                 res = await res.json()
-                let msInicio = Math.round(res.result[0].from * 1000) , msFinal = Math.round(res.result[0].to * 1000)
+                
+                let msInicio = Math.round(data.result[0].from * 1000) , msFinal = Math.round(data.result[0].to * 1000)
                 let tempoInicial = duration.default(msInicio).format("h:mm:ss")
                 let tempoFinal = duration.default(msFinal).format("h:mm:ss")
-                let episodio = res.result[0].episode
-                let titulo =  res.result[0].anilist.title.english || res.result[0].anilist.title.romaji
-                let similaridade = res.result[0].similarity * 100
-                similaridade = similaridade.toFixed(2)
-                let previaLink = res.result[0].video
+                let episodio = data.result[0].episode
+                let titulo =  data.result[0].anilist.title.english || data.result[0].anilist.title.romaji
+                let similaridade = (data.result[0].similarity * 100).toFixed(2)
+                let previaLink = data.result[0].video
                 resposta.resultado = {
                     tempoInicial,
                     tempoFinal,
@@ -202,17 +233,42 @@ export const obterAnimeInfo = async (bufferImagem)=>{
                     reject(resposta)
                 } 
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API obterAnimeInfo - ${err.message}`)
             reject({erro: 'Houve um erro no servidor de pesquisa de anime.'})
         }
     })
 }
 
-export const obterImagens = async (texto)=>{ 
-    return new Promise(async(resolve,reject)=>{
+
+interface ResObterImagens {
+    resultado?: {
+        id: string,
+        url: string,
+        width: number,
+        height: number,
+        color: number,
+        preview: {
+            url: string,
+            width: number,
+            height: number,
+        },
+        origin: {
+            title: string,
+            website: {
+                name: string,
+                domain: string,
+                url: string,
+            }
+        }
+    }[]
+    erro?: string
+}
+
+export const obterImagens = async (texto: string)=>{
+    return new Promise <ResObterImagens> (async(resolve,reject)=>{
         try {
-            let resposta = {}
+            let resposta : ResObterImagens = {}
             await google.image(texto, { safe: false, additional_params:{hl: 'pt'}}).then((imagens)=>{
                 if(imagens.length == 0) {
                     resposta.erro = "Não foi encontrado resultado para esta pesquisa."
@@ -228,7 +284,7 @@ export const obterImagens = async (texto)=>{
                 resposta.erro = "Houve um erro no servidor de pesquisa de imagens, ou não há resultados para essa pesquisa."
                 reject(resposta)
             })
-        } catch(err) {
+        } catch(err : any) {
             console.log(`API obterImagens - ${err.message}`)
             reject({erro: "Houve um erro no servidor de pesquisa de imagens."})
         }

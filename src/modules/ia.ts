@@ -3,10 +3,15 @@ import { Hercai } from "hercai"
 import qs from 'node:querystring'
 import {obterTraducao} from './gerais.js'
 
-export const obterRespostaIA = async(texto)=>{
-    return new Promise(async (resolve, reject)=>{
+interface RespostaIA {
+    resultado?: string
+    erro?: string
+}
+
+export const obterRespostaIA = async(texto: string)=>{
+    return new Promise <RespostaIA>(async (resolve, reject)=>{
         try{
-            let resposta = {}
+            let resposta : RespostaIA = {}
             const herc = new Hercai()
             await herc.question({content: texto, model: "v3"}).then((respostaHercai)=>{
                 resposta.resultado = respostaHercai.reply
@@ -19,54 +24,64 @@ export const obterRespostaIA = async(texto)=>{
                 }
                 reject(resposta)
             })
-        } catch(err) {
+        } catch(err : any) {
             console.log(`API obterRespostaIA - ${err.message}`)
             reject({erro:'Houve um erro no servidor, tente novamente mais tarde.'})
         }
     })
 }
 
-export const obterImagemIA = async(texto)=>{
-    return new Promise(async (resolve,reject)=>{
+
+interface RespostaIA {
+    resultado?: string
+    erro?: string
+}
+
+export const obterImagemIA = async(texto: string)=>{
+    return new Promise <RespostaIA>(async (resolve,reject)=>{
         try{
             const herc = new Hercai()
-            let resposta = {}
-            let {resultado} = await obterTraducao(texto, 'en')
-            await herc.drawImage({model: 'v3', prompt: resultado}).then((respostaHercai)=>{
-                if(respostaHercai.status == 404) {
-                    resposta.erro = 'O texto que você colocou é inválido ou não pode ser criado.'
-                    reject(resposta)
-                }else if(respostaHercai.status == 406) {
-                    resposta.erro = 'Houve um erro para criar a imagem, o projeto ainda está em BETA então tente novamente.'
-                    reject(resposta)
-                } else {
-                    if(!respostaHercai.url){
+            let resposta : RespostaIA = {}
+            let respostaTraducao = await obterTraducao(texto, 'en')
+
+            if(!respostaTraducao.resultado){
+                resposta.erro = 'Houve um erro na tradução do prompt, tente novamente mais tarde.'
+                reject(resposta)
+            } else {
+                await herc.drawImage({model: 'v3', prompt: respostaTraducao.resultado}).then((respostaHercai)=>{
+                    if(!respostaHercai.url) {
                         resposta.erro = 'Houve um erro no servidor, tente novamente mais tarde.'
                         reject(resposta)
                     } else {
                         resposta.resultado = respostaHercai.url
                         resolve(resposta)
                     }
-                }
-            }).catch((erro)=>{
-                if(erro.message == 'Error: Request failed with status code 429'){
-                    resposta.erro = 'Limite de pedidos foi excedido, tente novamente mais tarde'
-                } else {
-                    resposta.erro = 'Houve um erro no servidor, tente novamente mais tarde.'
-                }
-                reject(resposta)
-            })
-        } catch(err) {
+                }).catch((erro)=>{
+                    if(erro.message == 'Error: Request failed with status code 429'){
+                        resposta.erro = 'Limite de pedidos foi excedido, tente novamente mais tarde'
+                    } else {
+                        resposta.erro = 'Houve um erro no servidor, tente novamente mais tarde.'
+                    }
+                    reject(resposta)
+                })
+            }   
+        } catch(err : any) {
             console.log(`API obterImagemIA - ${err.message}`)
             reject({erro:'Houve um erro no servidor, tente novamente mais tarde.'})
         }
     })
 }
 
-export const obterRespostaSimi = async(texto)=>{
-    return new Promise(async(resolve, reject)=>{
+
+interface RespostaSimi {
+    resultado?: string
+    erro?: string
+}
+
+export const obterRespostaSimi = async(texto: string)=>{
+    return new Promise <RespostaSimi>(async(resolve, reject)=>{
         try{
-            let resposta = {}
+            let resposta : RespostaSimi = {}
             let config = {
                 url: "https://api.simsimi.vn/v2/simtalk",
                 method: "post",
@@ -86,7 +101,7 @@ export const obterRespostaSimi = async(texto)=>{
                     reject(resposta)
                 }
             })
-        } catch(err){
+        } catch(err : any){
             console.log(`API obterRespostaSimi - ${err.message}`)
             reject({erro: "Houve um erro no servidor do SimSimi."})
         }

@@ -11,9 +11,11 @@ export const StickerTipos= {
     PADRAO: 'padrao'
 }
 
-export async function criacaoSticker(buffer, {autor = 'LBOT', pack = 'LBOT Stickers', fps = 9, tipo = 'padrao'}){
+export async function criacaoSticker(buffer : Buffer, {autor = 'LBOT', pack = 'LBOT Stickers', fps = 9, tipo = 'padrao'}){
     try{
-        let {mime} = await fileTypeFromBuffer(buffer)
+        let dadosBuffer = await fileTypeFromBuffer(buffer)
+        let mime  = dadosBuffer?.mime
+        if(!mime) throw new Error
         let midiaVideo = mime.startsWith('video')
         let midiaAnimada = midiaVideo || mime.includes('gif')
         const bufferWebp = await conversaoWebP(buffer, midiaAnimada, fps, tipo)
@@ -23,7 +25,7 @@ export async function criacaoSticker(buffer, {autor = 'LBOT', pack = 'LBOT Stick
     }   
 }
 
-export async function adicionarExif(buffer, pack, autor){
+export async function adicionarExif(buffer: Buffer, pack: string, autor: string){
     try{
         const img = new webp.Image()
         const stickerPackId = crypto.randomBytes(32).toString('hex')
@@ -40,8 +42,8 @@ export async function adicionarExif(buffer, pack, autor){
     }
 }
 
-async function conversaoWebP(buffer, midiaAnimada, fps, tipo){
-    return new Promise(async (resolve,reject)=>{
+async function conversaoWebP(buffer : Buffer, midiaAnimada: boolean, fps: number, tipo : string){
+    return new Promise <Buffer> (async (resolve,reject)=>{
         try{
             let caminhoEntrada
             let opcoesFfmpeg
@@ -90,7 +92,7 @@ async function conversaoWebP(buffer, midiaAnimada, fps, tipo){
     })
 }
 
-async function edicaoImagem(buffer, tipo){
+async function edicaoImagem(buffer: Buffer, tipo: string){
     const image = await jimp.read(buffer)
     const redimensionar = tipo === 'auto' ? 'contain' : 'resize'
     image[redimensionar](512,512)
