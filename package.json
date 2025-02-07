@@ -30,6 +30,7 @@
     "format-duration-time": "^1.5.4",
     "fs-extra": "^9.0.1",
     "genius-lyrics": "^4.2.9",
+    "google-sr": "^5.0.0",
     "hercai": "^12.3.2",
     "instagram-url-direct": "^1.0.18",
     "jimp": "^0.22.12",

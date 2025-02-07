@@ -3,6 +3,7 @@ import {prettyNum} from 'pretty-num'
 import { rastrearEncomendas, RastreioEvent } from 'correios-brasil'
 import translate from '@vitalets/google-translate-api'
 import google from '@victorsouzaleal/googlethis'
+import { OrganicResult, search } from 'google-sr'
 import Genius from 'genius-lyrics'
 import qs from 'querystring'
 import { timestampParaData } from '../lib/util.js'
@@ -294,9 +295,9 @@ export const obterRastreioCorreios = async (codigoRastreio: string) =>{
 
 interface RespostaPesquisaWeb {
     resultado?: {
-        titulo: string,
-        link: string,
-        descricao: string
+        titulo: string | null,
+        link: string | null,
+        descricao: string | null
     }[],
     erro?: string
 }
@@ -305,33 +306,31 @@ export const obterPesquisaWeb = async (texto: string) =>{
     return new Promise <RespostaPesquisaWeb> (async (resolve, reject)=>{
         try{
             let resposta: RespostaPesquisaWeb = {}
-            const options = {
-                page: 0, 
-                safe: false, // Safe Search
-                parse_ads: false, // If set to true sponsored results will be parsed
-                additional_params: { 
-                    hl: 'pt-br' 
-                }
-            }
-            await google.search(texto, options).then((resultados)=>{
-                if(resultados.results.length == 0){
-                    resposta.erro = "Não foram encontrados resultados para esta pesquisa."
-                    reject(resposta)
-                } else {
-                    resposta.resultado = []
-                    for(let resultado of resultados.results){
-                        resposta.resultado.push({
-                            titulo: resultado.title,
-                            link: resultado.url,
-                            descricao : resultado.description
-                        })
-                    }
-                    resolve(resposta)
-                }
-            }).catch(()=>{
-                resposta.erro = "Houve um erro no servidor de pesquisa."
-                reject(resposta)
+
+            const pesquisaResultado = await search({
+                query: texto,
+                resultTypes: [OrganicResult],
+                requestConfig: {
+                    params: {
+                      safe: "off",
+                    },
+                  },
             })
+
+            if(pesquisaResultado.length == 0){
+                resposta.erro = "Não foram encontrados resultados para esta pesquisa."
+                reject(resposta)
+            } else {
+                resposta.resultado = []
+                for(let resultado of pesquisaResultado){
+                    resposta.resultado.push({
+                        titulo: resultado.title,
+                        link: resultado.link,
+                        descricao : resultado.description
+                    })
+                }
+                resolve(resposta)
+            }
         } catch(err : any) {
             console.log(`API obterPesquisaWeb - ${err.message}`)
             reject({erro: "Houve um erro no servidor de pesquisa."})
