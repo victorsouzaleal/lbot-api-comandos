@@ -9,8 +9,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node build/api.js",
-    "prestart": "npm run build",
+    "prepublishOnly": "npm run build",
     "build": "tsc"
   },
   "dependencies": {
@@ -32,7 +31,7 @@
     "genius-lyrics": "^4.2.9",
     "google-sr": "^5.0.0",
     "hercai": "^12.3.2",
-    "instagram-url-direct": "^1.0.18",
+    "instagram-url-direct": "^2.0.0",
     "jimp": "^0.22.12",
     "jsdom": "^24.1.1",
     "moment-timezone": "^0.5.31",
