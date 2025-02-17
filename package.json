@@ -3,11 +3,12 @@
   "version": "1.1.3",
   "description": "Conjunto de API's que são usados para os comandos do LBOT",
   "main": "build/api.js",
-  "types": "build/api.d.ts",
+  "types": "build/types/api.d.ts",
   "repository": "https://github.com/victorsouzaleal/lbot-api-comandos.git",
   "author": "victorsouzaleal <victorsouzaleal@gmail.com>",
   "license": "MIT",
   "type": "module",
+  "files": ["build"],
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "tsc"
@@ -52,6 +53,7 @@
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.13.1",
     "@types/user-agents": "^1.0.4",
+    "tsc-alias": "^1.8.10",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
