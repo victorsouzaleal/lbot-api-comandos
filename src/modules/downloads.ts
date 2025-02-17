@@ -4,7 +4,7 @@ import {converterMp4ParaMp3} from './videos.js'
 import Youtube from 'youtube-sr'
 import ytdl from '@distube/ytdl-core'
 import {instagramGetUrl} from 'instagram-url-direct'
-import getFbVideoInfo from 'fb-downloader-scrapper'
+import { getFbVideoInfo } from 'fb-downloader-scrapper'
 import Tiktok from '@tobyg74/tiktok-api-dl'
 import axios from 'axios'
 
