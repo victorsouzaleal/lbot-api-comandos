@@ -3,276 +3,228 @@ import {obterCaminhoTemporario, formatarSegundos} from '../lib/util.js'
 import {converterMp4ParaMp3} from './videos.js'
 import Youtube from 'youtube-sr'
 import ytdl from '@distube/ytdl-core'
-import {instagramGetUrl} from 'instagram-url-direct'
-import { getFbVideoInfo } from 'fb-downloader-scrapper'
+import {instagramGetUrl, InstagramResponse} from 'instagram-url-direct'
+import { FacebookResponse, getFbVideoInfo } from 'fb-downloader-scrapper'
 import Tiktok from '@tobyg74/tiktok-api-dl'
 import axios from 'axios'
 
 const yt_agent = ytdl.createAgent([{name: 'cookie1', value: 'GPS=1; YSC=CkypMSpfgiI; VISITOR_INFO1_LIVE=4nF8vxPW1gU; VISITOR_PRIVACY_METADATA=CgJCUhIEGgAgZA%3D%3D; PREF=f6=40000000&tz=America.Sao_Paulo; SID=g.a000lggw9yBHfdDri-OHg79Bkk2t6L2X7cbwK7jv8BYZZa4Q1hDbH4SZC5IHPqi_QBmSiigPHAACgYKAYgSARASFQHGX2Mi3N21zLYOMAku61_CaeccrxoVAUF8yKo3X97N4REFyHP4du4RIo1b0076; __Secure-1PSIDTS=sidts-CjIB3EgAEmNr03Tidygwml9aTrgDf0woi14K6jndMv5Ox5uI22tYDMNEYiaAoEF0KjGYgRAA; __Secure-3PSIDTS=sidts-CjIB3EgAEmNr03Tidygwml9aTrgDf0woi14K6jndMv5Ox5uI22tYDMNEYiaAoEF0KjGYgRAA; __Secure-1PSID=g.a000lggw9yBHfdDri-OHg79Bkk2t6L2X7cbwK7jv8BYZZa4Q1hDbYpnHl6jq9y45aoBaqMd96QACgYKAR4SARASFQHGX2MiqFuOgRtuIS_FKmulaCrckxoVAUF8yKpX5r8ISh5S5eQ4eofBuyCg0076; __Secure-3PSID=g.a000lggw9yBHfdDri-OHg79Bkk2t6L2X7cbwK7jv8BYZZa4Q1hDb_8Q3teG8nn23ceeF8jiOvwACgYKAY0SARASFQHGX2MiwBtnenbu4CRMpjQza-asfhoVAUF8yKoFXx_Zxl4MvxGnWSSsnv1z0076; HSID=AWgIQn3iifuaU_eRW; SSID=AR8Jlj2XTnPAmL5kf; APISID=l6PTqM9Dy8G_2E6P/A-sAusHOyG1pQ3T75; SAPISID=OSmwE6VjdFmB1u5-/A2N-7DiRQUreUSpgT; __Secure-1PAPISID=OSmwE6VjdFmB1u5-/A2N-7DiRQUreUSpgT; __Secure-3PAPISID=OSmwE6VjdFmB1u5-/A2N-7DiRQUreUSpgT; LOGIN_INFO=AFmmF2swRQIgShGx2tfQkQV4F8lyKnh4mwj54yTOPJqEdI44sDTtsrwCIQD870Le1gTMDFpz7rRHS6Fk0HzraG_SxHw_PdyLjUDXxg:QUQ3MjNmeVpqbVhSQlNCMnFFZXBKQkhCTHJxY1NXOVlYcG50SHNNOGxGZGZ3Z2ZobWwyOW95WGJ2LVplelNaZ0RfbGU3Tm1uYktDdHBnVm9fd3N3T0NncVpTN0ZaNlRoTTVETDJHSjV6QkxUWmdYWGx0eVFYeEFqa0gxUGdBYUJKbG5oQ2pBd3RBb0ROWXBwcFQwYkpBRktEQXlWbmZIbHJB; SIDCC=AKEyXzXkXTftuhPOtObUSCLHxp1byOAtlesMkptSGp8hyE3d97Dvy2UHd4-2ePWBpzUbQhV6; __Secure-1PSIDCC=AKEyXzXlrhkCIONPS4jCvhmtFb8nAKr8fEFCCFEFqN8BKyrw8tKHFh3-r8EWjrqjAKH9Z9fq0A; __Secure-3PSIDCC=AKEyXzWLIbNbh8dxdyKhTafkyKIbEBwVKGR4lNRhhYX5u_v1k4vBnu4eAS9lgpP-JK2PgiSDJw'}])
 
-interface ResObterMidiaTwitter {
-    resultado?: {
-        texto: string,
-        midias: {
-            tipo: string,
-            url: string
-        }[]
-    }
-    erro?: string
-}
 
-export const obterMidiaTwitter = async(url: string)=>{
-    return new Promise <ResObterMidiaTwitter> (async (resolve, reject)=>{
-        try{
-            let resposta : ResObterMidiaTwitter = {} 
-            url = url.replace(/twitter\.com|x\.com/g, 'api.vxtwitter.com')
-
-            await axios.get(url).then(({data}) =>{
-                resposta.resultado = {
-                    texto: data.text,
-                    midias:[]
-                }
-
-                data.media_extended.forEach((midia : {type: string, url: string})=>{
-                    if(midia.type == 'video'){
-                        resposta.resultado?.midias.push({
-                            tipo : 'video',
-                            url : midia.url
-                        })
-                    } else if(midia.type == 'image'){
-                        resposta.resultado?.midias.push({
-                            tipo : 'imagem',
-                            url : midia.url
-                        })
-                    }
-                })
-
-                resolve(resposta)
-            }).catch(()=>{
-                resposta.erro = `Houve um erro no servidor de obter mídias do Twitter/X`
-                reject(resposta)
-            })
-        } catch(err : any){
-            console.log(`API obterMidiaTwitter - ${err.message}`)
-            reject({erro: `Houve um erro no servidor de obter mídias do Twitter/X`})
-        }
-    })
-
-}
-
-
-interface ResObterMidiaTiktok {
-    resultado?: {
-        autor_perfil: string | undefined,
-        descricao: string | undefined,
+interface InfoTwitter {
+    texto: string,
+    midias: {
         tipo: string,
-        duracao : number | null,
-        url: string | string []
-    }
-    erro?: string
-}
-
-export const obterMidiaTiktok = async(url : string)=>{
-
-    return new Promise <ResObterMidiaTiktok> (async (resolve, reject)=>{
-        try{
-            let resposta : ResObterMidiaTiktok = {}
-            await Tiktok.Downloader(url, {version: "v1"}).then((resultado)=>{
-                if(resultado.status == "success"){
-                    resposta.resultado = {
-                        autor_perfil: resultado.result?.author.nickname,
-                        descricao : resultado.result?.description,
-                        tipo: resultado.result?.type == "video" ? "video" : "imagem",
-                        duracao: resultado.result?.type == "video" ? parseInt(((resultado.result?.video?.duration as number)/1000).toFixed(0)) : null,
-                        url: resultado.result?.type == "video" ? resultado.result?.video?.playAddr[0] as string : resultado.result?.images as string[]
-                    }
-                    resolve(resposta)
-                } else {
-                    resposta.erro = 'Não foi encontrado resultado para este link, verifique o link.'
-                    reject(resposta)
-                }
-            }).catch(()=>{
-                resposta.erro = 'Houve um erro no servidor de download do TikTok.'
-                reject(resposta)
-            })
-        } catch(err : any){
-            console.log(`API obterMidiaTiktok - ${err.message}`)
-            reject({erro: 'Houve um erro no servidor de download do TikTok.'})
-        }
-    })
-}
-
-interface ResObterMidiaFacebook {
-    resultado?: any
-    erro?: string
-}
-
-export const obterMidiaFacebook = async(url : string)=>{
-    return new Promise <ResObterMidiaFacebook> (async (resolve,reject)=>{
-        try {
-            let resposta : ResObterMidiaFacebook = {}
-            await getFbVideoInfo(url).then((res: any)=>{
-                resposta.resultado = res
-                resolve(resposta)
-            }).catch(()=>{
-                resposta.erro = "Erro ao obter o video, verifique o link ou tente mais tarde."
-                reject(resposta)
-            })
-        } catch(err : any) {
-            console.log(`API obterMidiaFacebook - ${err.message}`)
-            reject({erro: "Houve um erro no servidor de download do Facebook."})
-        }
-    })
-
-}
-
-
-interface ResObterMidiaInstagram{
-    resultado?: {
-        tipo: string,
-        buffer: Buffer
+        url: string
     }[]
-    erro?: string
 }
 
-export const obterMidiaInstagram = async(url: string)=>{
-    return new Promise <ResObterMidiaInstagram> (async(resolve, reject)=>{
-        try{
-            let resposta : ResObterMidiaInstagram = {}
-            await instagramGetUrl(url).then(async (res : any)=>{
-                resposta.resultado = []
-                for (const url of res.url_list) {
-                    const {data, headers} = await axios.get(url, { responseType: 'arraybuffer' })
+export function obterMidiaTwitter (url: string){
+    return new Promise <InfoTwitter> ((resolve)=>{
+        url = url.replace(/twitter\.com|x\.com/g, 'api.vxtwitter.com')
+        axios.get(url)
+        .then(({data}) =>{
+            let midias : {tipo: string, url: string}[] = []
+            data.media_extended.forEach((midia : {type: string, url: string})=>{
+                if(midia.type == 'video'){
+                    midias.push({
+                        tipo : 'video',
+                        url : midia.url
+                    })
+                } else if(midia.type == 'image'){
+                    midias.push({
+                        tipo : 'imagem',
+                        url : midia.url
+                    })
+                }
+            })
+            resolve({
+                texto: data.text,
+                midias
+            })
+        })
+        .catch(()=>{
+            throw new Error('Erro ao obter a mídia, verifique o link ou tente mais tarde.')
+        })
+    })
+}
+
+
+
+interface InfoTiktok {
+    autor_perfil?: string,
+    descricao?: string,
+    tipo: string,
+    duracao : number | null,
+    url: string | string []
+}
+
+export function obterMidiaTiktok (url : string){
+    return new Promise <InfoTiktok> ((resolve)=>{
+        Tiktok.Downloader(url, {version: "v1"})
+        .then((resultado)=>{
+            if(resultado.status == "success"){
+                resolve({
+                    autor_perfil: resultado.result?.author.nickname,
+                    descricao : resultado.result?.description,
+                    tipo: resultado.result?.type == "video" ? "video" : "imagem",
+                    duracao: resultado.result?.type == "video" ? parseInt(((resultado.result?.video?.duration as number)/1000).toFixed(0)) : null,
+                    url: resultado.result?.type == "video" ? resultado.result?.video?.playAddr[0] as string : resultado.result?.images as string[]
+                })
+            } else {
+                throw new Error("Erro ao obter a mídia, verifique o link ou tente mais tarde.")
+            }
+        })
+    })
+}
+
+interface InfoFacebook {
+    url: string,
+    duracao_ms: number,
+    sd: string,
+    hd: string,
+    titulo: string,
+    thumbnail: string,
+}
+
+export function obterMidiaFacebook(url : string) {
+    return new Promise <InfoFacebook> ((resolve)=>{
+        getFbVideoInfo(url)
+        .then((res)=>{
+            resolve({
+                url: res.url,
+                duracao_ms: res.duration_ms,
+                sd: res.sd,
+                hd: res.hd,
+                titulo: res.title,
+                thumbnail: res.thumbnail
+            })
+        })
+        .catch(()=>{
+            throw new Error("Erro ao obter a mídia, verifique o link ou tente mais tarde.")
+        })
+    })
+}
+
+
+interface InfoInstagram {
+    autor_usuario: string,
+    autor_nome: string,
+    legenda: string,
+    likes: number,
+    midias: {
+        tipo : string,
+        buffer : Buffer
+    }[]
+}
+
+export function obterMidiaInstagram (url: string){
+    return new Promise <InfoInstagram> ((resolve)=>{ 
+        instagramGetUrl(url)
+        .then(async (res : InstagramResponse)=>{
+            let midiasInstagram : {tipo: string, buffer: Buffer}[] = []
+            for (const url of res.url_list) {
+                axios.get(url, { responseType: 'arraybuffer' })
+                .then(({data, headers})=>{
                     const buffer = Buffer.from(data, 'utf-8')
                     const tipo = headers['content-type'] == 'video/mp4' ? 'video' : 'imagem'
-                    resposta.resultado.push({tipo, buffer})
-                }
-                resolve(resposta)
-            }).catch(()=>{
-                resposta.erro = "Erro ao obter o video, verifique o link ou tente mais tarde."
-                reject(resposta)
-            })
-        } catch(err : any){
-            console.log(`API obterMidiaInstagram - ${err.message}`)
-            reject({erro: "Houve um erro no servidor de download do Instagram"})
-        }
-    })
-
-}
-
-
-interface ResObterInfoVideoYT{
-    resultado?: {
-        videoId: string,
-        title: string,
-        shortDescription: string,
-        lengthSeconds: string,
-        keywords?: string[],
-        channelId: string,
-        isOwnerViewing: boolean,
-        isCrawlable: boolean,
-        durationFormatted: string,
-        format: ytdl.videoFormat
-    }
-    erro?: string
-}
-
-export const obterInfoVideoYT = async(texto : string)=>{ 
-    return new Promise <ResObterInfoVideoYT> (async (resolve, reject)=>{
-        try{
-            let resposta: ResObterInfoVideoYT = {}, id_video : string = ''
-            //Checagem do ID do video
-            const URL_VALIDA = ytdl.validateURL(texto)
-            if(URL_VALIDA){
-                id_video = ytdl.getVideoID(texto)
-            } else {
-                await Youtube.default.searchOne(texto).then((pesquisaVideo)=>{
-                    id_video = pesquisaVideo.id as string
-                }).catch(()=>{
-                    resposta.erro = 'Houve um erro ao obter as informações do video.'
-                    reject(resposta) 
+                    midiasInstagram.push({tipo, buffer})
                 })
+                .catch(()=>{})                    
             }
-            //Obtendo informações do video
-            ytdl.getInfo(id_video, { 
-                playerClients: ["WEB", "WEB_EMBEDDED", "ANDROID", "IOS"], 
-                agent: yt_agent
-            }).then(infovideo=>{
-                const formats = ytdl.filterFormats(infovideo.formats, "videoandaudio");
-                const format = ytdl.chooseFormat(formats, {quality: 'highest'})
-                resposta.resultado = {
-                    videoId : infovideo.player_response.videoDetails.videoId,
-                    title:  infovideo.player_response.videoDetails.title,
-                    shortDescription: infovideo.player_response.videoDetails.shortDescription,
-                    lengthSeconds: infovideo.player_response.videoDetails.lengthSeconds,
-                    keywords: infovideo.player_response.videoDetails.keywords,
-                    channelId: infovideo.player_response.videoDetails.channelId,
-                    isOwnerViewing: infovideo.player_response.videoDetails.isOwnerViewing,
-                    isCrawlable: infovideo.player_response.videoDetails.isCrawlable,
-                    durationFormatted: formatarSegundos(parseInt(infovideo.player_response.videoDetails.lengthSeconds)),
-                    format
-                } 
-                resolve(resposta)                       
-            }).catch((err)=>{
-                if(err.message == "Status code: 410") resposta.erro = 'O video parece ter restrição de idade ou precisa de ter login para assistir.' 
-                else resposta.erro = 'Houve um erro ao obter as informações do video.'
-                reject(resposta)
+            if(!midiasInstagram) throw new Error("Não foi possível fazer download de nenhuma mídia deste link.")
+            resolve({
+                autor_usuario : res.post_info.owner_username,
+                autor_nome: res.post_info.owner_fullname,
+                legenda: res.post_info.caption,
+                likes: res.post_info.likes,
+                midias : midiasInstagram
             })
-        } catch(err : any){
-            console.log(`API obterInfoVideoYT - ${err.message}`)
-            reject({erro:'Houve um erro no servidor de pesquisas do Youtube.'})
+        })
+        .catch(()=>{
+            throw new Error("Houve um erro ao tentar obter as mídias do Instagram, verifique o link e tente novamente.")
+        })
+    })  
+}
+
+
+interface InfoVideoYT {
+    videoId: string,
+    title: string,
+    shortDescription: string,
+    lengthSeconds: string,
+    keywords?: string[],
+    channelId: string,
+    isOwnerViewing: boolean,
+    isCrawlable: boolean,
+    durationFormatted: string,
+    format: ytdl.videoFormat
+}
+
+export function obterInfoVideoYT (texto : string){
+    return new Promise <InfoVideoYT> ((resolve)=>{ 
+        let id_video = ''
+        //Checagem do ID do video
+        const URL_VALIDA = ytdl.validateURL(texto)
+        if(URL_VALIDA){
+            id_video = ytdl.getVideoID(texto)
+        } else {
+            Youtube.default.searchOne(texto)
+            .then((pesquisaVideo)=>{
+                id_video = pesquisaVideo.id as string
+                //Obtendo informações do video
+                ytdl.getInfo(id_video, { 
+                    playerClients: ["WEB", "WEB_EMBEDDED", "ANDROID", "IOS"], 
+                    agent: yt_agent
+                }).then(infovideo=>{
+                    const formats = ytdl.filterFormats(infovideo.formats, "videoandaudio");
+                    const format = ytdl.chooseFormat(formats, {quality: 'highest'})
+                    resolve({
+                        videoId : infovideo.player_response.videoDetails.videoId,
+                        title:  infovideo.player_response.videoDetails.title,
+                        shortDescription: infovideo.player_response.videoDetails.shortDescription,
+                        lengthSeconds: infovideo.player_response.videoDetails.lengthSeconds,
+                        keywords: infovideo.player_response.videoDetails.keywords,
+                        channelId: infovideo.player_response.videoDetails.channelId,
+                        isOwnerViewing: infovideo.player_response.videoDetails.isOwnerViewing,
+                        isCrawlable: infovideo.player_response.videoDetails.isCrawlable,
+                        durationFormatted: formatarSegundos(parseInt(infovideo.player_response.videoDetails.lengthSeconds)),
+                        format
+                    })                       
+                }).catch((err)=>{
+                    if(err.message == "Status code: 410") throw new Error ('O video parece ter restrição de idade ou precisa de ter login para assistir.')
+                    throw err
+                })
+            })
+            .catch(()=>{
+                throw new Error('Houve um erro ao obter as informações do video.')
+            })
         }
     })
 }
 
-
-interface ResObterYTMP4{
-    resultado?: Buffer
-    erro?: string
-}
-
-export const obterYTMP4 = async(texto : string) =>{
-    return new Promise <ResObterYTMP4> (async (resolve, reject)=>{
-        try{
-            let resposta: ResObterYTMP4 = {}
-            let saidaVideo = obterCaminhoTemporario('mp4')
-            let {resultado : infoVideo} = await obterInfoVideoYT(texto)
-            let videoStream = ytdl(infoVideo?.videoId as string, {format: infoVideo?.format, agent: yt_agent})
-            videoStream.pipe(fs.createWriteStream(saidaVideo))
-            videoStream.on("end", ()=>{
-                let bufferVideo = fs.readFileSync(saidaVideo)
-                fs.unlinkSync(saidaVideo)
-                resposta.resultado = bufferVideo
-                resolve(resposta)
-            }).on('error', ()=>{
-                resposta.erro = "Erro no servidor para o obter o video do Youtube"
-                reject(resposta)
-            })
-        } catch(err : any){
-            console.log(`API obterYTMP4 - ${err.message}`)
-            reject({erro: "Erro no servidor para o obter o video do Youtube"})
-        }    
-    })
+export function obterYTMP4 (texto : string){
+    return new Promise <Buffer> (async (resolve)=>{
+        let saidaVideo = obterCaminhoTemporario('mp4')
+        let infoVideo = await obterInfoVideoYT(texto)
+        let videoStream = ytdl(infoVideo?.videoId as string, {format: infoVideo?.format, agent: yt_agent})
+        videoStream.pipe(fs.createWriteStream(saidaVideo))
+        videoStream.on("end", ()=>{
+            let bufferVideo = fs.readFileSync(saidaVideo)
+            fs.unlinkSync(saidaVideo)
+            resolve(bufferVideo)
+        }).on('error', ()=>{
+            throw new Error("Houve um erro ao fazer o download do vídeo, tente outro video ou tente mais tarde.")
+        })
+    })    
 }
 
 
-interface ResObterYTMP3{
-    resultado?: Buffer
-    erro?: string
-}
-
-export const obterYTMP3 = async(texto : string)=>{
-    return new Promise <ResObterYTMP3> (async (resolve, reject)=>{
-        try{
-            let resposta : ResObterYTMP3 = {}
-            let {resultado : bufferVideo} = await obterYTMP4(texto)
-            let {resultado : bufferAudio} = await converterMp4ParaMp3(bufferVideo as Buffer)
-            resposta.resultado = bufferAudio
-            resolve(resposta)
-        } catch(err : any){
-            console.log(`API obterYTMP3 - ${err.message}`)
-            reject({erro: "Erro na conversão para o obter o MP3 do Youtube"})
-        }
+export function obterYTMP3 (texto : string){
+    return new Promise <Buffer> (async (resolve)=>{
+        let bufferVideo = await obterYTMP4(texto)
+        let bufferAudio = await converterMp4ParaMp3(bufferVideo)
+        resolve(bufferAudio)
     })
 }
 

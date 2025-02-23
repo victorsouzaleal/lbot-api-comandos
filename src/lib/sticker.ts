@@ -6,12 +6,7 @@ import {obterCaminhoTemporario} from './util.js'
 import {fileTypeFromBuffer} from 'file-type'
 import jimp from 'jimp'
 
-export const StickerTipos= {
-    CIRCULO: 'circulo',
-    PADRAO: 'padrao'
-}
-
-export async function criacaoSticker(buffer : Buffer, {autor = 'LBOT', pack = 'LBOT Stickers', fps = 9, tipo = 'padrao'}){
+export async function criacaoSticker(buffer : Buffer, {autor = 'LBOT', pack = 'LBOT Stickers', fps = 9, tipo = "padrao"} : {autor: string, pack: string, fps: number, tipo : "padrao"|"circulo"|"auto"}){
     try{
         let dadosBuffer = await fileTypeFromBuffer(buffer)
         let mime  = dadosBuffer?.mime
@@ -19,7 +14,8 @@ export async function criacaoSticker(buffer : Buffer, {autor = 'LBOT', pack = 'L
         let midiaVideo = mime.startsWith('video')
         let midiaAnimada = midiaVideo || mime.includes('gif')
         const bufferWebp = await conversaoWebP(buffer, midiaAnimada, fps, tipo)
-        return await adicionarExif(bufferWebp, pack, autor)
+        const bufferSticker = await adicionarExif(bufferWebp, pack, autor)
+        return bufferSticker
     } catch(err){
         throw err
     }   
@@ -36,13 +32,14 @@ export async function adicionarExif(buffer: Buffer, pack: string, autor: string)
         exif.writeUIntLE(jsonBuffer.length, 14, 4)
         await img.load(buffer)
         img.exif = exif
-        return await img.save(null)
+        const bufferImagem : Buffer = await img.save(null)
+        return bufferImagem
     } catch(err){
         throw err
     }
 }
 
-async function conversaoWebP(buffer : Buffer, midiaAnimada: boolean, fps: number, tipo : string){
+function conversaoWebP(buffer : Buffer, midiaAnimada: boolean, fps: number, tipo : "padrao"|"circulo"|"auto"){
     return new Promise <Buffer> (async (resolve,reject)=>{
         try{
             let caminhoEntrada
@@ -92,20 +89,10 @@ async function conversaoWebP(buffer : Buffer, midiaAnimada: boolean, fps: number
     })
 }
 
-async function edicaoImagem(buffer: Buffer, tipo: string){
+async function edicaoImagem(buffer: Buffer, tipo: "padrao"|"circulo"|"auto"){
     const image = await jimp.read(buffer)
     const redimensionar = tipo === 'auto' ? 'contain' : 'resize'
     image[redimensionar](512,512)
-    switch (tipo) {
-        case 'circulo':
-            image.circle()
-            break
-        case 'auto':
-            break
-        case 'padrao':
-            break
-        default:
-            break
-    }
-    return await image.getBufferAsync('image/png')
+    if(tipo == 'circulo') image.circle()
+    return image.getBufferAsync('image/png')
 }

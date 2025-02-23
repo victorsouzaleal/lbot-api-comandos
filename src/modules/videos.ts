@@ -3,15 +3,10 @@ import fs from 'fs-extra'
 import axios from 'axios'
 import {obterCaminhoTemporario} from '../lib/util.js'
 
-interface ResConverterMp4ParaMp3 {
-    resultado?: Buffer
-    erro?: string
-}
 
-export const converterMp4ParaMp3 = (bufferVideo: Buffer) => {
-    return new Promise <ResConverterMp4ParaMp3> ((resolve,reject)=>{
+export function converterMp4ParaMp3 (bufferVideo: Buffer){
+    return new Promise <Buffer> ((resolve,reject)=>{
         try{
-            let resposta : ResConverterMp4ParaMp3 = {}
             let caminhoVideo = obterCaminhoTemporario('mp4')
             fs.writeFileSync(caminhoVideo, bufferVideo)
             let saidaAudio = obterCaminhoTemporario('mp3')
@@ -22,17 +17,14 @@ export const converterMp4ParaMp3 = (bufferVideo: Buffer) => {
                 let bufferAudio = fs.readFileSync(saidaAudio)
                 fs.unlinkSync(caminhoVideo)
                 fs.unlinkSync(saidaAudio)
-                resposta.resultado = bufferAudio
-                resolve(resposta)
+                resolve(bufferAudio)
             })
             .on("error", (err)=>{
                 fs.unlinkSync(caminhoVideo)
-                resposta.erro = 'Houve um erro na conversão para MP3.'
-                reject(resposta)
+                throw new Error("Houve um erro na conversão de MP4 para MP3.")
             })
-        } catch(err : any){
-            console.log(`API converterMp4ParaMp3 - ${err.message}`)
-            reject({erro: "Houve um erro na conversão para MP3."})
+        } catch(err){
+            reject(err)
         }
     })
 }
