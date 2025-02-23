@@ -1,7 +1,7 @@
-# LBOT - API's para comandos
-Conjunto de API's que são usados para os comandos do LBOT (https://github.com/victorsouzaleal/lbot-whatsapp)
+# Biblioteca-LBOT para comandos
+Biblioteca usada para realizar para os comandos do LBOT (https://github.com/victorsouzaleal/lbot-whatsapp)
 
-### O projeto está aberto para quem quiser contribuir ou utilizar em um outro bot
+Essa biblioteca foi criada para facilitar na manutenção e atualização do meu bot e também servir para uso para quem quer criar um bot próprio e já ter uma biblioteca cheia de recursos.
 
 ## Documentação
 No momento não tenho uma documentação completa para cada função, o projeto é apenas usado no meu bot principal.
