@@ -7,7 +7,7 @@ import { OrganicResult, search } from 'google-sr'
 import Genius from 'genius-lyrics'
 import qs from 'querystring'
 import { timestampParaData } from '../lib/util.js'
-import {obterBrasileiraoB, obterBrasileiraoA, DadosBrasileirao} from '@victorsouzaleal/brasileirao'
+import {obterDadosBrasileiraoA, obterDadosBrasileiraoB, DadosBrasileirao} from '@victorsouzaleal/brasileirao'
 import {JSDOM} from 'jsdom'
 import UserAgent from 'user-agents'
 
@@ -81,7 +81,7 @@ export function obterMangasLancamento(){
 
 export function obterDadosBrasileirao(serie : "A" | "B"){
     return new Promise <DadosBrasileirao>(async(resolve)=>{
-        const dadosBrasileirao = (serie == "A") ? await obterBrasileiraoA() : await obterBrasileiraoB()
+        const dadosBrasileirao = (serie == "A") ? await obterDadosBrasileiraoA() : await obterDadosBrasileiraoB()
         resolve(dadosBrasileirao)
     })
 }
