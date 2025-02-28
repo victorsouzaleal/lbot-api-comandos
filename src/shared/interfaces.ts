@@ -174,4 +174,6 @@ export type StickerOptions = {
     type : StickerType
 }
 
+export type AudioModificationType = "estourar" | "reverso" | "grave" | "agudo" | "x2" | "volume"
+
 export type StickerType = "resize"|"contain"|"circle"

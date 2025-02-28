@@ -8,7 +8,7 @@ import tts from 'node-gtts'
 import {fileTypeFromBuffer, FileTypeResult} from 'file-type'
 import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
-import { MusicRecognition } from '../shared/interfaces.js'
+import { AudioModificationType, MusicRecognition } from '../shared/interfaces.js'
 
 
 export function textToVoice (lang: string, text: string){
@@ -38,37 +38,37 @@ export function audioTranscription (audioBuffer : Buffer, {deepgram_secret_key} 
     })
 }
 
-export function audioModified (audioBuffer: Buffer, type: "estourar" | "reverso" | "grave" | "agudo" | "x2" | "volume"){
+export function audioModified (audioBuffer: Buffer, type: AudioModificationType){
     return new Promise <Buffer> ((resolve)=>{
         let inputAudioPath = getTempPath('mp3')
         let outputAudioPath = getTempPath('mp3')
-        let ffmpegOpcoes : string[] = []
+        let options : string[] = []
         fs.writeFileSync(inputAudioPath, audioBuffer)
         switch(type){
             case "estourar":
-                ffmpegOpcoes = ["-y", "-filter_complex", "acrusher=level_in=3:level_out=5:bits=10:mode=log:aa=1"] 
+                options = ["-y", "-filter_complex", "acrusher=level_in=3:level_out=5:bits=10:mode=log:aa=1"] 
                 break
             case "reverso":
-                ffmpegOpcoes = ["-y", "-filter_complex", "areverse"]
+                options = ["-y", "-filter_complex", "areverse"]
                 break
             case "grave":
-                ffmpegOpcoes = ["-y", "-af", "asetrate=44100*0.8"]
+                options = ["-y", "-af", "asetrate=44100*0.8"]
                 break
             case "agudo":
-                ffmpegOpcoes = ["-y", "-af", "asetrate=44100*1.4"]
+                options = ["-y", "-af", "asetrate=44100*1.4"]
                 break
             case "x2":
-                ffmpegOpcoes = ["-y", "-filter:a", "atempo=2.0", "-vn"]
+                options = ["-y", "-filter:a", "atempo=2.0", "-vn"]
                 break
             case "volume":
-                ffmpegOpcoes = ["-y", "-filter:a", "volume=4.0"]
+                options = ["-y", "-filter:a", "volume=4.0"]
                 break
             default:
                 fs.unlinkSync(inputAudioPath)
                 throw new Error(`Esse tipo de edição não é suportado`)
         }
         
-        ffmpeg(inputAudioPath).outputOptions(ffmpegOpcoes).save(outputAudioPath)
+        ffmpeg(inputAudioPath).outputOptions(options).save(outputAudioPath)
         .on('end', async () => {
             let bufferModifiedAudio = fs.readFileSync(outputAudioPath)
             fs.unlinkSync(inputAudioPath)
