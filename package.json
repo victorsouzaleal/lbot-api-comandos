@@ -2,27 +2,27 @@
   "name": "@victorsouzaleal/biblioteca-lbot",
   "version": "2.0.1",
   "description": "Biblioteca usada para realizar os comandos do LBOT",
-  "main": "build/api.js",
-  "types": "build/types/api.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
   "repository": "https://github.com/victorsouzaleal/biblioteca-lbot.git",
   "author": "victorsouzaleal <victorsouzaleal@gmail.com>",
   "license": "MIT",
   "files": [
-    "build"
+    "dist"
   ],
   "type": "module",
   "exports": {
     ".": {
-      "require": "./build/api.cjs",
-      "import": "./build/api.js",
-      "types": "./build/types/api.d.ts"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/types/index.d.ts"
     },
     "./package.json": "./package.json"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "tsc",
-    "postbuild": "rollup ./build/api.js --format cjs --file ./build/api.cjs"
+    "postbuild": "rollup ./dist/index.js --format cjs --file ./dist/index.cjs"
   },
   "dependencies": {
     "@deepgram/sdk": "^3.5.1",
