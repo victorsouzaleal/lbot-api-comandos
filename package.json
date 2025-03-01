@@ -1,6 +1,6 @@
 {
   "name": "@victorsouzaleal/biblioteca-lbot",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Biblioteca usada para realizar os comandos do LBOT",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
