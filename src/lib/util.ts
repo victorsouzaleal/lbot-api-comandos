@@ -26,7 +26,10 @@ export function getRandomFilename(ext: FileExtensions){
 }
 
 export function getTempPath(ext: FileExtensions){
-  if(!fs.existsSync(path.join(tmpdir(), 'biblioteca-lbot'))) fs.mkdirSync(path.join(tmpdir(), 'biblioteca-lbot'))
+  if(!fs.existsSync(path.join(tmpdir(), 'biblioteca-lbot'))){
+    fs.mkdirSync(path.join(tmpdir(), 'biblioteca-lbot'))
+  }
+  
   return path.join(tmpdir(), 'biblioteca-lbot', `${crypto.randomBytes(20).toString('hex')}.${ext}`)
 }
 

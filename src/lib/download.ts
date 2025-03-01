@@ -16,12 +16,14 @@ export function twitterMedia (url: string){
         url = url.replace(/twitter\.com|x\.com/g, 'api.vxtwitter.com')
         axios.get(url).then(({data}) =>{
             let medias : {type: "video" | "image", url: string}[] = []
+
             data.media_extended.forEach((media : {type: string, url: string})=>{
                 medias.push({
                     type: (media.type === 'video') ? 'video' : 'image',
                     url: media.url
                 })
             })
+
             resolve({
                 text: data.text,
                 media : medias
@@ -73,6 +75,7 @@ export function instagramMedia (url: string){
     return new Promise <InstagramMedia> ((resolve)=>{ 
         instagramGetUrl(url).then(async (res : InstagramResponse)=>{
             let mediasInstagram : {type: "video" | "image", buffer: Buffer}[] = []
+
             for (const url of res.url_list) {
                 axios.get(url, { responseType: 'arraybuffer' }).then(({data, headers})=>{
                     const buffer = Buffer.from(data, 'utf-8')
@@ -80,7 +83,11 @@ export function instagramMedia (url: string){
                     mediasInstagram.push({type, buffer})
                 }).catch(()=>{})                    
             }
-            if(!mediasInstagram) throw new Error("Não foi possível fazer download de nenhuma mídia deste link.")
+
+            if(!mediasInstagram) {
+                throw new Error("Não foi possível fazer download de nenhuma mídia deste link.")
+            }
+
             resolve({
                 author_username : res.post_info.owner_username,
                 author_fullname: res.post_info.owner_fullname,
@@ -96,15 +103,19 @@ export function instagramMedia (url: string){
 
 export function ytInfo (text : string){
     return new Promise <YTInfo> ((resolve)=>{ 
-        let videoId = ''
-        //Checagem do ID do video
         const isURLValid = ytdl.validateURL(text)
+        let videoId : string | undefined
+
         if(isURLValid){
             videoId = ytdl.getVideoID(text)
         } else {
             Youtube.default.searchOne(text).then((video)=>{
-                videoId = video.id as string
-                //Obtendo informações do video
+                videoId = video.id
+
+                if(!videoId){
+                    throw new Error ('Houve um erro ao obter os dados do vídeo.')
+                }
+                
                 ytdl.getInfo(videoId, { 
                     playerClients: ["WEB", "WEB_EMBEDDED", "ANDROID", "IOS"], 
                     agent: yt_agent
@@ -122,8 +133,11 @@ export function ytInfo (text : string){
                         format
                     })                       
                 }).catch((err)=>{
-                    if(err.message == "Status code: 410") throw new Error ('O video parece ter restrição de idade ou precisa de ter login para assistir.')
-                    throw err
+                    if(err.message == "Status code: 410") {
+                        throw new Error ('O video parece ter restrição de idade ou precisa de ter login para assistir.')
+                    } else {
+                        throw err
+                    }
                 })
             }).catch(()=>{
                 throw new Error('Houve um erro ao obter as informações do video.')
@@ -134,12 +148,12 @@ export function ytInfo (text : string){
 
 export function ytMP4 (text : string){
     return new Promise <Buffer> (async (resolve)=>{
-        let videoOutputFile = getTempPath('mp4')
-        let videoInfo = await ytInfo(text)
-        let videoStream = ytdl(videoInfo?.id_video as string, {format: videoInfo?.format, agent: yt_agent})
+        const videoOutputFile = getTempPath('mp4')
+        const videoInfo = await ytInfo(text)
+        const videoStream = ytdl(videoInfo?.id_video, {format: videoInfo?.format, agent: yt_agent})
         videoStream.pipe(fs.createWriteStream(videoOutputFile))
         videoStream.on("end", ()=>{
-            let videoBuffer = fs.readFileSync(videoOutputFile)
+            const videoBuffer = fs.readFileSync(videoOutputFile)
             fs.unlinkSync(videoOutputFile)
             resolve(videoBuffer)
         }).on('error', ()=>{
@@ -151,8 +165,8 @@ export function ytMP4 (text : string){
 
 export function ytMP3 (text : string){
     return new Promise <Buffer> (async (resolve)=>{
-        let videoBuffer = await ytMP4(text)
-        let audioBuffer = await convertMP4ToMP3(videoBuffer)
+        const videoBuffer = await ytMP4(text)
+        const audioBuffer = await convertMP4ToMP3(videoBuffer)
         resolve(audioBuffer)
     })
 }

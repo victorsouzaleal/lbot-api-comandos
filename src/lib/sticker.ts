@@ -29,13 +29,13 @@ export function renameSticker(stickerBuffer: Buffer, pack: string, author: strin
 
 export function stickerToImage(stickerBuffer: Buffer){
     return new Promise <Buffer>((resolve)=>{
-        let inputWebpPath = getTempPath('webp')
-        let outputPngPath = getTempPath('png')
+        const inputWebpPath = getTempPath('webp')
+        const outputPngPath = getTempPath('png')
         fs.writeFileSync(inputWebpPath, stickerBuffer)
         ffmpeg(inputWebpPath)
         .save(outputPngPath)
         .on('end', ()=>{
-            let imageBuffer = fs.readFileSync(outputPngPath)
+            const imageBuffer = fs.readFileSync(outputPngPath)
             fs.unlinkSync(inputWebpPath)
             fs.unlinkSync(outputPngPath)
             resolve(imageBuffer)
@@ -48,10 +48,14 @@ export function stickerToImage(stickerBuffer: Buffer){
 
 async function stickerCreation(mediaBuffer : Buffer, {author, pack, fps, type} : StickerOptions){
     try{
-        let bufferData = await fileTypeFromBuffer(mediaBuffer)
-        let mime = bufferData?.mime
-        if(!mime) throw new Error
-        let isAnimated = mime.startsWith('video') || mime.includes('gif')
+        const bufferData = await fileTypeFromBuffer(mediaBuffer)
+
+        if(!bufferData) {
+            throw new Error("Não foi possível obter os dados do mídia enviada.")
+        }
+
+        const mime = bufferData.mime
+        const isAnimated = mime.startsWith('video') || mime.includes('gif') 
         const webpBuffer = await webpConvertion(mediaBuffer, isAnimated, fps, type)
         const stickerBuffer = await addExif(webpBuffer, pack, author)
         return stickerBuffer
@@ -65,9 +69,9 @@ async function addExif(buffer: Buffer, pack: string, author: string){
         const img = new webp.Image()
         const stickerPackId = crypto.randomBytes(32).toString('hex')
         const json = { 'sticker-pack-id': stickerPackId, 'sticker-pack-name': pack, 'sticker-pack-publisher': author}
-        let exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
-        let jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
-        let exif = Buffer.concat([exifAttr, jsonBuffer])
+        const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
+        const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
+        const exif = Buffer.concat([exifAttr, jsonBuffer])
         exif.writeUIntLE(jsonBuffer.length, 14, 4)
         await img.load(buffer)
         img.exif = exif

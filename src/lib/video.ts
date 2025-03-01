@@ -5,14 +5,14 @@ import {getTempPath} from './util.js'
 
 export function convertMP4ToMP3 (videoBuffer: Buffer){
     return new Promise <Buffer> ((resolve)=>{
-        let inputVideoPath = getTempPath('mp4')
+        const inputVideoPath = getTempPath('mp4')
         fs.writeFileSync(inputVideoPath, videoBuffer)
-        let outputAudioPath = getTempPath('mp3')
+        const outputAudioPath = getTempPath('mp3')
         ffmpeg(inputVideoPath)
         .outputOptions(['-vn', '-codec:a libmp3lame', '-q:a 3'])
         .save(outputAudioPath)
         .on('end', () => {
-            let audioBuffer = fs.readFileSync(outputAudioPath)
+            const audioBuffer = fs.readFileSync(outputAudioPath)
             fs.unlinkSync(inputVideoPath)
             fs.unlinkSync(outputAudioPath)
             resolve(audioBuffer)
@@ -24,29 +24,46 @@ export function convertMP4ToMP3 (videoBuffer: Buffer){
     })
 }
 
-export function videoThumbnail(media : string | Buffer, type : "file"|"buffer"|"url"){
+export function videoThumbnail(videoMedia : string | Buffer, type : "file"|"buffer"|"url"){
     return new Promise <Base64URLString> (async (resolve)=>{
-        let inputPath : string = ''
-        let outputThumbnailPath = getTempPath('jpg')
+        let inputPath : string | undefined
+        const outputThumbnailPath = getTempPath('jpg')
+
         if(type == "file"){
-            inputPath = media as string
+            if(typeof videoMedia !== 'string'){
+                throw new Error('O tipo de operação está definido como FILE mas a mídia enviada não é um caminho de arquivo válido.')
+            }
+
+            inputPath = videoMedia
         } else if(type == "buffer"){
+            if(!Buffer.isBuffer(videoMedia)){
+                throw new Error('O tipo de operação está definido como BUFFER mas a mídia enviada não é um buffer válido.')
+            }
+
             inputPath = getTempPath('mp4')
-            fs.writeFileSync(inputPath, media as Buffer)
+            fs.writeFileSync(inputPath, videoMedia)
         } else if(type == "url"){
-            let urlResponse = await axios.get(media as string,  { responseType: 'arraybuffer' })
-            let bufferUrl = Buffer.from(urlResponse.data, "utf-8")
+            if(typeof videoMedia !== 'string'){
+                throw new Error('O tipo de operação está definido como URL mas a mídia enviada não é uma url válida.')
+            }
+
+            const responseUrlBuffer = await axios.get(videoMedia,  { responseType: 'arraybuffer' })
+            const bufferUrl = Buffer.from(responseUrlBuffer.data, "utf-8")
             inputPath = getTempPath('mp4')
             fs.writeFileSync(inputPath, bufferUrl)
         }
+
         ffmpeg(inputPath)
         .addOption("-y")
         .inputOptions(["-ss 00:00:00"])
         .outputOptions(["-vf scale=32:-1", "-vframes 1", "-f image2"])
         .save(outputThumbnailPath)
         .on('end', ()=>{
-            if(type != 'file') fs.unlinkSync(inputPath)
-            let thumbBase64 = fs.readFileSync(outputThumbnailPath).toString('base64')
+            if(type != 'file' && inputPath) {
+                fs.unlinkSync(inputPath)
+            }
+
+            const thumbBase64 = fs.readFileSync(outputThumbnailPath).toString('base64')
             fs.unlinkSync(outputThumbnailPath)
             resolve(thumbBase64)
         })

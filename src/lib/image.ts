@@ -20,7 +20,8 @@ export function uploadImage(imageBuffer : Buffer){
 
 export function emojiMix(emoji1: string, emoji2: string){
     return new Promise <Buffer> ((resolve)=>{
-        let isSupportedEmoji1  = checkSupported(emoji1, true), isSupportedEmoji2  = checkSupported(emoji2, true)
+        const isSupportedEmoji1  = checkSupported(emoji1, true)
+        const isSupportedEmoji2  = checkSupported(emoji2, true)
 
         if(!isSupportedEmoji1) 
             throw new Error(`${emoji1} não é válido para a união.`)
@@ -29,9 +30,12 @@ export function emojiMix(emoji1: string, emoji2: string){
         if(!isSupportedEmoji2 && !isSupportedEmoji1) 
             throw new Error(`${emoji1} e ${emoji2} não são válidos para a união.`)
 
-        let emojiUrl = getEmojiMixUrl(emoji1, emoji2, false, true)
-        if(!emojiUrl) 
+        const emojiUrl = getEmojiMixUrl(emoji1, emoji2, false, true)
+
+        if(!emojiUrl) {
             throw new Error("Emojis não compatíveis para união")
+        }
+            
         axios.get(emojiUrl, {responseType: 'arraybuffer'}).then(({data})=>{
             resolve(data)
         }).catch(()=>{
@@ -42,15 +46,16 @@ export function emojiMix(emoji1: string, emoji2: string){
 
 export function removeBackground(imageBuffer: Buffer){
     return new Promise <Buffer> (async (resolve)=>{
-        //Upload da imagem
-        let uploadFileName = getRandomFilename("png")
-        let formDataUpload = new FormData();
+        const URL_BASE_UPLOAD_IMAGE = 'https://download1.imageonline.co/ajax_upload_file.php'
+        const URL_BASE_REMOVE_BG = 'https://download1.imageonline.co/pngmaker.php'
+        const uploadFileName = getRandomFilename("png")
+        const formDataUpload = new FormData();
         formDataUpload.append('files', imageBuffer, {filename: uploadFileName})
-
-        let config = {
+        
+        const configUpload = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'https://download1.imageonline.co/ajax_upload_file.php',
+            url: URL_BASE_UPLOAD_IMAGE,
             headers: { 
                 'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0', 
                 'Accept': ' */*', 
@@ -65,26 +70,25 @@ export function removeBackground(imageBuffer: Buffer){
             data : formDataUpload
         }
 
-        let uploadResponse = await axios.request(config).catch(()=>{
+        const uploadResponse = await axios.request(configUpload).catch(()=>{
             throw new Error("Houve um erro no servidor de upload.")
         })
+        const uploadData = JSON.parse(JSON.stringify(uploadResponse.data))
 
-        let uploadData = JSON.parse(JSON.stringify(uploadResponse.data))
-        if(!uploadData.isSuccess) 
+        if(!uploadData.isSuccess){
             throw new Error("Tamanho da foto excedeu o limite")
+        } 
+            
+        const formDataRemoveBg = new FormData()
+        formDataRemoveBg.append('name', uploadData.files[0].name)
+        formDataRemoveBg.append('originalname', uploadData.files[0].old_name)
+        formDataRemoveBg.append('option3', uploadData.files[0].extension)
+        formDataRemoveBg.append('option4', '1')
 
-        // Remoção de fundo
-        let formDataRemove = new FormData()
-        formDataRemove.append('name', uploadData.files[0].name)
-        formDataRemove.append('originalname', uploadData.files[0].old_name)
-        formDataRemove.append('option3', uploadData.files[0].extension)
-        formDataRemove.append('option4', '1')
-
-        
-        config = {
+        const configRemoveBg = {
             method: 'post',
             maxBodyLength: Infinity,
-            url: 'https://download1.imageonline.co/pngmaker.php',
+            url: URL_BASE_REMOVE_BG,
             headers: { 
             'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0', 
             'Accept': ' */*', 
@@ -95,15 +99,15 @@ export function removeBackground(imageBuffer: Buffer){
             'Sec-Fetch-Mode': ' cors', 
             'Sec-Fetch-Site': ' same-site'
             },
-            data : formDataRemove
+            data : formDataRemoveBg
         }
 
-        let responseRemoveBackground = await axios.request(config).catch(()=>{
+        const responseRemoveBackground = await axios.request(configRemoveBg).catch(()=>{
             throw new Error("Houve um erro no servidor de remover o fundo.")
         })
 
-        let pictureUrl = responseRemoveBackground.data.match(/https:\/\/download1\.imageonline\.co\/download\.php\?filename=[A-Za-z0-9]+-imageonline\.co-[0-9]+\.png/m)[0]
-        let {data: imageBufferRemovedBg} = await axios.get(pictureUrl, {responseType: 'arraybuffer'}).catch(()=>{
+        const pictureUrl = responseRemoveBackground.data.match(/https:\/\/download1\.imageonline\.co\/download\.php\?filename=[A-Za-z0-9]+-imageonline\.co-[0-9]+\.png/m)[0]
+        const {data: imageBufferRemovedBg} = await axios.get(pictureUrl, {responseType: 'arraybuffer'}).catch(()=>{
             throw new Error("Houve erro ao tentar baixar a imagem sem fundo.")
         })
         resolve(imageBufferRemovedBg)
@@ -112,14 +116,15 @@ export function removeBackground(imageBuffer: Buffer){
 
 export function animeRecognition(imageBuffer : Buffer){ 
     return new Promise <AnimeRecognition> ((resolve)=>{
-        fetch(`https://api.trace.moe/search?anilistInfo`,{
+        const URL_BASE = 'https://api.trace.moe/search?anilistInfo'
+        fetch(URL_BASE,{
             method: "POST",
             body: imageBuffer,
             headers: { "Content-type": "image/jpeg" },
         }).then(async (res)=>{
-            let data : {result: any[]} = await res.json()
-            let msInitial = Math.round(data.result[0].from * 1000) 
-            let msFinal = Math.round(data.result[0].to * 1000)
+            const data : {result: any[]} = await res.json()
+            const msInitial = Math.round(data.result[0].from * 1000) 
+            const msFinal = Math.round(data.result[0].to * 1000)
             resolve({
                 initial_time : duration.default(msInitial).format("h:mm:ss"),
                 final_time: duration.default(msFinal).format("h:mm:ss"),
@@ -129,12 +134,13 @@ export function animeRecognition(imageBuffer : Buffer){
                 preview_url: data.result[0].video
             })
         }).catch(err =>{
-            if(err.status == 429) 
+            if(err.status == 429){
                 throw new Error('Muitas solicitações sendo feitas, tente novamente mais tarde.')
-            else if(err.status == 400) 
+            } else if(err.status == 400){
                 throw new Error('Não foi possível achar resultados para esta imagem')
-            else
+            } else {
                 throw new Error('Houve um erro no servidor de pesquisa de anime.')
+            } 
         })
     })
 }
@@ -142,13 +148,16 @@ export function animeRecognition(imageBuffer : Buffer){
 export function imageSearchGoogle(text: string){
     return new Promise <ImageSearch[]> ((resolve)=>{
         google.image(text, { safe: false, additional_params:{hl: 'pt'}}).then((images)=>{
-            if(!images.length) 
+            if(!images.length){
                 throw new Error("Nenhum resultado foi encontrado para esta pesquisa.")
+            } 
+                
             let imagesResult : ImageSearch[] = []
             for (let image of images){
                 if(image.preview) 
                     imagesResult.push(image)
-            } 
+            }
+
             resolve(imagesResult)
         }).catch(()=>{
             throw new Error("Houve um erro no servidor de pesquisa de imagens, ou não há resultados para essa pesquisa.")
