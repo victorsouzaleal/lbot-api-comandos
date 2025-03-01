@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Hercai } from "hercai"
 import qs from 'node:querystring'
-import {translationGoogle} from './module.general.js'
+import {translationGoogle} from './general.js'
 
 export function hercaiQuestionAI(text: string){
     return new Promise <string> ((resolve)=>{

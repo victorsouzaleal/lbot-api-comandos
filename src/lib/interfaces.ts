@@ -174,6 +174,13 @@ export type StickerOptions = {
     type : StickerType
 }
 
+export interface TruthMachine {
+    calibration: Buffer,
+    result: Buffer
+}
+
 export type AudioModificationType = "estourar" | "reverso" | "grave" | "agudo" | "x2" | "volume"
+
+export type FileExtensions = 'mp3' | 'mp4' | 'webp' | 'png' | 'jpg' | 'gif'
 
 export type StickerType = "resize"|"contain"|"circle"

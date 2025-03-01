@@ -1,7 +1,7 @@
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs-extra'
 import axios from 'axios'
-import {getTempPath} from '../shared/util.js'
+import {getTempPath} from './util.js'
 
 export function convertMP4ToMP3 (videoBuffer: Buffer){
     return new Promise <Buffer> ((resolve)=>{

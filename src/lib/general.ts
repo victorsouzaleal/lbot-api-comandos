@@ -1,4 +1,5 @@
 import axios from 'axios'
+import fs from 'fs-extra'
 import {prettyNum} from 'pretty-num'
 import { rastrearEncomendas, RastreioResponse } from 'correios-brasil'
 import translate from '@vitalets/google-translate-api'
@@ -6,11 +7,13 @@ import google from '@victorsouzaleal/googlethis'
 import { OrganicResult, search } from 'google-sr'
 import Genius from 'genius-lyrics'
 import qs from 'querystring'
-import { timestampToDate } from '../shared/util.js'
+import { timestampToDate } from './util.js'
 import {obterDadosBrasileiraoA, obterDadosBrasileiraoB, DadosBrasileirao} from '@victorsouzaleal/brasileirao'
 import {JSDOM} from 'jsdom'
 import UserAgent from 'user-agents'
-import { AnimeRelease, CurrencyConvert, DDD, MangaRelease, MusicLyrics, News, WebSearch, Wheather } from '../shared/interfaces.js'
+import { AnimeRelease, CurrencyConvert, DDD, MangaRelease, MusicLyrics, News, TruthMachine, WebSearch, Wheather } from './interfaces.js'
+import path from 'node:path'
+const mediaPath = path.resolve(import.meta.dirname, '..', 'media')
 
 export function animeReleases(){
     return new Promise<AnimeRelease[]>((resolve)=>{
@@ -391,6 +394,28 @@ export function symbolsASCI(){
         }).catch(()=>{
             throw new Error('Houve um erro para obter os dados, tente novamente mais tarde.')
         })
+    })
+}
+
+export function truthMachine(){
+    return new Promise<TruthMachine>(resolve =>{
+        const calibrationImageBuffer = fs.readFileSync(path.join(mediaPath, 'calibrando.png'))
+        const filenames = ["conversapraboi.png", "estresse.png", "incerteza.png", "kao.png", "meengana.png", "mentiroso.png", "vaipra.png", "verdade.png"]
+        const filenameChosen = filenames[Math.floor(Math.random() * filenames.length)]
+        const resultImageBuffer = fs.readFileSync(path.join(mediaPath, filenameChosen))
+        resolve({
+            calibration: calibrationImageBuffer,
+            result: resultImageBuffer
+        })
+    })
+}
+
+export function flipCoin(){
+    return new Promise<Buffer>(resolve =>{
+        const filenames = ['cara.png', 'coroa.png']
+        const filenameChosen = filenames[Math.floor(Math.random() * filenames.length)]
+        const resultImageBuffer = fs.readFileSync(path.join(mediaPath, filenameChosen))
+        resolve(resultImageBuffer)
     })
 }
 

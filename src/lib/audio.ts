@@ -1,14 +1,14 @@
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs-extra'
-import {getTempPath} from '../shared/util.js'
-import {convertMP4ToMP3} from './module.video.js'
+import {getTempPath} from './util.js'
+import {convertMP4ToMP3} from './video.js'
 import duration from 'format-duration-time'
 import {createClient} from '@deepgram/sdk'
 import tts from 'node-gtts'
 import {fileTypeFromBuffer, FileTypeResult} from 'file-type'
 import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
-import { AudioModificationType, MusicRecognition } from '../shared/interfaces.js'
+import { AudioModificationType, MusicRecognition } from './interfaces.js'
 
 
 export function textToVoice (lang: string, text: string){
@@ -111,7 +111,7 @@ export function musicRecognition (mediaBuffer : Buffer, {acr_host , acr_access_k
                 throw new Error('Houve um erro no servidor do ACRCloud, tente novamente mais tarde')
 
             let arrayReleaseDate = data.metadata.music[0].release_date.split("-")
-            let artists = []
+            let artists : string[] = []
             for(let artist of data.metadata.music[0].artists){
                 artists.push(artist.name)
             }
